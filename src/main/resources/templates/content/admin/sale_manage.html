@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{fragment/admin_layout}">
+
+<!-- 연결해야 할 외부 css파일 -->
+<th:block layout:fragment="content_css">
+	<!-- <link rel="stylesheet" href=""> -->
+</th:block>
+
+<th:block layout:fragment="content">
+	<div class="row">
+		<div class="col-12">
+			<div class="row mt-4 g-4 mb-3">
+				<!-- 구매 내역 제목 줄 -->
+				<div class="col">
+					<h2>매출관리</h2>
+				</div>
+			</div>
+			<div class="row mt-4 g-4 mb-3">
+				<!-- 월 매출 -->
+				<div class="col-12">
+					<h4>월매출</h4>
+				</div>
+				<div class="col-12" id="revenueData"
+					th:data-revenue="${totalRevenueList}">
+					<canvas id="monthChart"></canvas>
+				</div>
+			</div>
+			<div class="row mt-4 g-4 mb-3">
+				<!-- 일 매출 -->
+				<div class="col-12">
+					<div class="row">
+						<div class="col-2">
+							<select class="form-select" id="selectYear" name="year" onchange="selectYear()">
+								<th:block th:each="selYear : ${#numbers.sequence(thisYear - 4, thisYear)}">
+									<option th:value="${selYear}" th:selected="${year == selYear}">[[${selYear}]]</option>
+								</th:block>
+							</select>
+						</div>
+						<div class="col-10"></div>
+					</div>
+					<div class="row">
+						<div class="col">
+							<table class="table text-center bord er" id="table">
+							</table>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="row mt-4 g-4 mb-3">
+				<!-- 일 매출 -->
+				<div class="col" id="revenueData2"
+					th:data-revenue2="${totalRevenueList3}">
+					<div class="row mb-3">
+						<canvas id="myChart">
+						</canvas>
+					</div>
+					<div class="row">
+						<table class="table">
+							<thead>
+								<tr>
+									<td></td>
+									<td th:each="month : ${#numbers.sequence(1,12)}">[[${month}]]월</td>
+								</tr>
+							</thead>
+							<tbody>
+								<tr th:each="map, state : ${totalRevenueList2}">
+									<td>[[${state.index == 0 ? '판매 건수' : '판매 금액'}]]</td>
+									<td th:each="data : ${map}">[[${data.value}]]</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</th:block>
+
+<!-- 연결해야 할 외부 js파일 -->
+<th:block layout:fragment="content_js">
+		<!-- 차트 링크 -->
+	<!-- <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4"></script> -->
+	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+	<script type="text/javascript" src="/js/content/admin/sale_manage.js"></script>
+</th:block>
+</html>

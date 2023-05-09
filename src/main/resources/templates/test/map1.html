@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+</head>
+<body style="text-align: center">
+	<h2>전체 데이터 간단히 출력</h2>
+	<br>
+	<th:block th:each="data : ${mapData}">
+		<div style="text-align: left" th:text="${data.key}"></div>
+		<div style="text-align: left" th:text="${data.value}"></div>
+	</th:block>
+	<h2>특정 key값에 해당하는 데이터 출력</h2>
+	<div style="text-align: left;">키가 cateList인 데이터를 출력</div>
+	<div style="text-align: left" th:text="${mapData['cateList']}"></div>
+
+	<h2>특정 key값에 해당하는 데이터 출력2</h2>
+	<table border="1" style="margin:0 auto;">
+		<tr>
+			<td>메뉴코드</td>
+			<td>메뉴명</td>
+		</tr>
+		<tr th:each="menu : ${mapData['menuList']}">
+			<td th:text="${menu.menuCode}"></td>
+			<td th:text="${menu.menuName}"></td>
+		</tr>
+	</table>
+
+	<h2>map안의 모든 데이터를 표로 출력</h2>
+	<th:block th:each="data : ${mapData}">
+		<div th:text="${data.key}" style="color:blue; font-weight: bold; text-align: left;"></div>
+		<th:block th:each="val : ${data.value}">
+			<div style="text-align: left;" th:text="${val}"></div>
+		</th:block>
+	</th:block>
+</body>
+</html>

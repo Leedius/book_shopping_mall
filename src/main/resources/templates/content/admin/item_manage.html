@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{fragment/admin_layout}">
+
+<!-- 연결해야 할 외부 css파일 -->
+<th:block layout:fragment="content_css">
+	<link rel="stylesheet" href="/css/content/admin/item_manage.css">
+</th:block>
+
+<th:block layout:fragment="content">
+	<div class="row text-center mt-4 g-4 mb-3">
+		<div class="col">
+			<form th:action="@{/admin/itemManage}" class="row"
+				id="searchForm" method="post">
+				<table class="table table-bordered align-middle item_search_table">
+					<colgroup>
+						<col width="10%">
+						<col width="35%">
+						<col width="10%">
+						<col width="35%">
+						<col width="10%">
+					</colgroup>
+					<tr>
+						<td class="search_table_title">상 품 명</td>
+						<td colspan="3"><input type="text" class="form-control"
+							name="searchVO.searchItemName" th:value="${itemVO.searchVO == null ? '' : itemVO.searchVO.searchItemName}"></td>
+						<td rowspan="3"><input class="btn" type="button" value="검 색" onclick="searchItem();"
+							style="height: 100px; width: 100%;"></td>
+					</tr>
+					<tr>
+						<td class="search_table_title">카테고리</td>
+						<td colspan="3" class=""
+							style="text-align: left; padding-left: 1rem;"><input
+							type="checkbox" id="allChk" value="all" name="searchVO.searchCateCode" th:checked="${itemVO.searchVO == null or #arrays.contains(itemVO.searchVO.searchCateCode, 'all')}">전체&nbsp;<th:block
+								th:each="cateList : ${cateList}">
+								<input type="checkbox" th:value="${cateList.cateCode}"
+									class="chk align-self-center" name="searchVO.searchCateCode" th:checked="${itemVO.searchVO == null or #arrays.contains(itemVO.searchVO.searchCateCode, cateList.cateCode)}">
+								[[${cateList.cateName}]]<span th:if="${cateList.isUse =='N'}">(미사용)
+								</span>&nbsp;
+						</th:block></td>
+					</tr>
+					<tr>
+						<td class="search_table_title">상품상태</td>
+						<td><select id="itemStatus" name="searchVO.searchItemStatus"
+							th:onchange="" class="form-select">
+								<option value="0" th:selected="${itemVO.searchVO == null or itemVO.searchVO.searchItemStatus == 0}">전체</option>
+								<option value="1" th:selected="${itemVO.searchVO != null and itemVO.searchVO.searchItemStatus == 1}">판매중</option>
+								<option value="2" th:selected="${itemVO.searchVO != null and itemVO.searchVO.searchItemStatus == 2}">준비중</option>
+								<option value="3" th:selected="${itemVO.searchVO != null and itemVO.searchVO.searchItemStatus == 3}">매진</option>
+						</select></td>
+						<td>재고량</td>
+						<td class="input-group"><input type="number"
+							class="form-control" name="searchVO.searchMinItemStock" min="0" th:value="${itemVO.searchVO == null ? '' : itemVO.searchVO.searchMinItemStock}" onkeyup="this.value = this.value.replace(/[^0-9]/g, '1'); if(parseInt(this.value) < 1 ) {this.value = 1;}">
+							&nbsp;&nbsp;-&nbsp;&nbsp; <input type="number"
+							class="form-control" name="searchVO.searchMaxItemStock" min="0"th:value="${itemVO.searchVO == null ? '' : itemVO.searchVO.searchMaxItemStock}" onkeyup="this.value = this.value.replace(/[^0-9]/g, '1'); if(parseInt(this.value) < 1 ) {this.value = 1;}"></td>
+					</tr>
+				</table>
+			</form>
+		</div>
+	</div>
+	<div class="row">
+		<!-- 내용 영역 -->
+		<div class="col-6" style="padding-left: 0px">
+			<table class="table text-center" id="itemList">
+				<colgroup>
+					<col width="5%">
+					<col width="20%">
+					<col width="*">
+					<col width="15%">
+					<col width="15%">
+				</colgroup>
+				<thead>
+					<tr>
+						<td class="item_list_title">No</td>
+						<td class="item_list_title">카테고리</td>
+						<td class="item_list_title">상품명</td>
+						<td class="item_list_title">상품상태</td>
+						<td class="item_list_title">재고량</td>
+					</tr>
+				</thead>
+				<tbody style="font-size: 1rem;">
+					<th:block th:each="item, status : ${itemList}">
+						<tr>
+							<td th:text="${#lists.size(itemList) - status.index}"></td>
+							<!-- <td>[[${status.index + 1}]]</td> -->
+							<td>[[${item.categoryVO.cateName}]]</td>
+							<td><a th:onclick="updateFormAjax([[${item.itemCode}]])">[[${item.itemName}]]</a></td>
+							<td>[[${item.itemStatusName}]]</td>
+							<td>[[${item.itemStock}]]</td>
+						</tr>
+					</th:block>
+				</tbody>
+			</table>
+		</div>
+		<div class="col-6" id="itemInfo" style="padding-right: 0px">
+			<div></div>
+		</div>
+	</div>
+	<!-- Img Modal -->
+	<!-- data-bs-backdrop="static" 바깥 클릭시 꺼지지 않게 하는 옵션 -->
+	<div class="modal fade" id="imgModal" tabindex="-1"
+		aria-labelledby="exampleModalLabel" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h1 class="modal-title fs-5" id="imageOriginFileName"></h1>
+					<button type="button" class="btn-close" data-bs-dismiss="modal"
+						aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<img src="" style="width: 100%">
+				</div>
+			</div>
+		</div>
+	</div>
+</th:block>
+
+<!-- 연결해야 할 외부 js파일 -->
+<th:block layout:fragment="content_js">
+	<script type="text/javascript" src="/js/content/admin/item_manage.js"></script>
+</th:block>
+</html>

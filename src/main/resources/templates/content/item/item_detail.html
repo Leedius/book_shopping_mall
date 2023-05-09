@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+	layout:decorate="~{fragment/user_layout}">
+
+<!-- 연결해야 할 외부 css파일 -->
+<th:block layout:fragment="content_css">
+	<link rel="stylesheet" href="/css/content/item/item_detail.css">
+</th:block>
+
+<th:block layout:fragment="content">
+	<div class="row mb-5">
+		<!-- 책 정보 부분 -->
+		<div class="col-12">
+			<th:block th:each="img : ${itemVO.imgList}">
+				<div class="row mt-5" th:if="${img.isMain == 'Y'}">
+					<div class="col-2"></div>
+					<div class="col-4 text-center">
+						<img th:src="@{/upload/images/item/}+${img.attachedFileName}"
+							width="80%">
+					</div>
+					<div class="col-3">
+						<div class="row">
+							<div class="col-12 item_price mb-4">
+								<h3>[[${itemVO.itemName}]]</h3>
+							</div>
+							<div class="col-12 item_price mb-4" id="itemPrice">
+								[[${#numbers.formatCurrency(itemVO.itemPrice)}]]</div>
+							<div
+								class="col-3 d-flex align-items-center justify-content-center">
+								<div>수 량</div>
+							</div>
+							<div class="col-9">
+								<div class="input-group">
+									<input type="number" class="form-control" value="1" min="1"
+										max="100" id="purchaseQuantity" name="purchaseQuantity"
+										th:onchange="sumPrice([[${itemVO.itemPrice}]], this, [[${itemVO.itemStock}]])"
+										th:onkeyup="sumPrice([[${itemVO.itemPrice}]], this, [[${itemVO.itemStock}]])">
+									<span class="input-group-text">권</span>
+								</div>
+							</div>
+							<div class="col-12 mb-4 item_stock" id="itemStock">(재고 :
+								[[${itemVO.itemStock}]]권)</div>
+							<div
+								class="col-3 d-flex align-items-center justify-content-center mb-4">
+								<div>총 가격</div>
+							</div>
+							<div class="col-9 mb-4">
+								<div id="totalPrice">
+									<div class="input-group">
+										<input th:data-itemCode="${itemVO.itemCode}" type="number"
+											class="form-control" value="1" min="1" max="1000000"
+											id="sumPrice" name="sumPrice" readonly
+											th:value="${itemVO.itemPrice}"> <span
+											class="input-group-text">원</span>
+									</div>
+								</div>
+							</div>
+							<th:block th:if="${itemVO.itemStatus == 1}">
+								<th:block sec:authorize="isAnonymous()">
+									<div class="col-6"></div>
+								</th:block>
+								<th:block sec:authorize="isAuthenticated()">
+									<div class="col-6 d-grid">
+										<input class="btn" type="button" value="바로구매"
+											onclick="regBuy()">
+									</div>
+								</th:block>
+								<div class="col-6 d-grid">
+									<input class="btn" type="button" value="장바구니"
+										th:onclick="regCart([[${#authentication.name == 'anonymousUser' ? '' : #authentication.name}]], [[${itemVO.itemCode}]]);">
+								</div>
+							</th:block>
+							<th:block th:if="${itemVO.itemStatus == 2}">
+								<div class="preparing form-control">준비중입니다.</div>
+							</th:block>
+							<th:block th:if="${itemVO.itemStatus == 3}">
+								<div class="sold_out form-control">매진입니다.</div>
+							</th:block>
+						</div>
+					</div>
+					<div class="col-2"></div>
+				</div>
+			</th:block>
+		</div>
+	</div>
+	<div class="row text-center mb-5">
+		<!-- 책 상세 정보 부분 -->
+		<div class="col">
+			<div class="row mb-3 item_Intro">
+				<div class="col-2"></div>
+				<div class="col-8">
+					<div>[[${itemVO.itemIntro}]]</div>
+				</div>
+				<div class="col-2"></div>
+			</div>
+			<div class="row">
+				<div class="col">
+					<th:block th:each="img : ${itemVO.imgList}">
+						<div th:if="${img.isMain == 'N'}">
+							<img th:src="${'/upload/images/item/' + img.attachedFileName}"
+								width="70%">
+						</div>
+					</th:block>
+				</div>
+			</div>
+
+		</div>
+	</div>
+</th:block>
+
+<!-- 연결해야 할 외부 js파일 -->
+<th:block layout:fragment="content_js">
+	<script type="text/javascript" src="/js/content/item/item_detail.js"></script>
+</th:block>
+</html>

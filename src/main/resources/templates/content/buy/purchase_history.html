@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{fragment/userInfo_layout}">
+
+<!-- 연결해야 할 외부 css파일 -->
+<th:block layout:fragment="content_css">
+	<link rel="stylesheet" href="/css/content/buy/purchase_history.css">
+</th:block>
+
+<th:block layout:fragment="content">
+	<div class="row">
+		<div class="col-12">
+			<!-- 구매 내역 제목 줄 -->
+			<div class="row mt-4 g-4 mb-3">
+				<div class="col">
+					<h2>구매내역</h2>
+				</div>
+			</div>
+			<form id="month-form"
+				th:action="@{/buy/purchaseList?activeMenu=purchaseHistory}"
+				method="post">
+				<input type="hidden" value="" name="month">
+			</form>
+			<form th:action="@{/buy/purchaseList?activeMenu=purchaseHistory}"
+				method="post">
+				<div class="row mb-2 search_bar align-items-center">
+					<!-- 검색줄 -->
+					<div class="col d-grid">
+						<input class="btn" type="button" value="전체"
+							onclick="purchaseList(0)">
+					</div>
+					<div class="col d-grid">
+						<input class="btn" type="button" value="최근 1개월"
+							onclick="purchaseList(-1)">
+					</div>
+					<div class="col d-grid">
+						<input class="btn" type="button" value="최근 3개월"
+							onclick="purchaseList(-3)">
+					</div>
+					<div class="col"></div>
+					<div class="col" style="text-align: right;">직접입력</div>
+					<div class="col">
+						<input type="date" name="fromDate" id="fromDate" th:value=${buyVO.fromDate}>
+					</div>
+					<div class="col ">
+						<input type="date" name="toDate" id="toDate" th:value=${buyVO.toDate}>
+					</div>
+					<div class="col d-grid">
+						<input class="btn" type="submit" value="검색">
+					</div>
+				</div>
+			</form>
+			<div class="row mb-2 search_bar">
+				<!-- 전체 펼치기 숨기기 버튼 줄 -->
+				<div class="offset-10 col-2 d-grid">
+					<input data-toggle-status="close" class="btn" type="button"
+						value="전체 펼치기" onclick="toggle_all(this)">
+				</div>
+			</div>
+		</div>
+		<div class="col-12">
+			<!-- 구매 내역 목록 -->
+			<div class="row">
+				<div class="col-12">
+					<div class="row">
+						<th:block th:if="${#lists.size(purchaseList) != 0}">
+							<div class="col">
+								<th:block th:each="purchase, state : ${purchaseList}">
+									<div class="accordion" id="accordionPanelsStayOpenExample">
+										<div class="row onePurchase mb-5 pb-3 mx-0">
+											<div class="col accordion-item">
+												<div class="accordion-header">
+													<div class="row text-center">
+														<div class="col-12 px-0">
+															<button class="accordion-button text-center collapsed"
+																type="button" data-bs-toggle="collapse"
+																th:data-bs-target="'#panelsStayOpen-collapseOne-'+${state.count}"
+																aria-expanded="false"
+																th:aria-controls="'panelsStayOpen-collapseOne-'+${state.count}">
+																<div class="col">
+																	<span>구매완료</span> <span class="purchase_date">([[${purchase.buyDate}]])</span>
+																</div>
+																<div class="col">총 주문 가격</div>
+																<div class="col">[[${#numbers.formatCurrency(purchase.buyPrice)}]]</div>
+																<div class="col">[[${purchase.buyDetailList[0].itemVO.itemName}]]</div>
+																<div th:if="${#lists.size(purchase.buyDetailList) > 1}">
+																	<div class="col">외[[${purchase.etc-1}]]건</div>
+																</div>
+																<div th:if="${#lists.size(purchase.buyDetailList) <= 1}">
+																	<div class="col"></div>
+																</div>
+															</button>
+														</div>
+													</div>
+												</div>
+												<div th:id="'panelsStayOpen-collapseOne-'+${state.count}"
+													class="accordion-collapse collapse">
+													<div class="accordion-body">
+														<div class="row form-control text-center mx-0 py-0">
+															<div th:each="buyDetail : ${purchase.buyDetailList}"
+																class="col-12 one_item_list border-bottom pt-2">
+																<div class="row pb-2">
+																	<div class="col-3">
+																		<div th:each="img : ${buyDetail.itemVO.imgList}">
+																			<img
+																				th:src="${'/upload/images/item/' + img.attachedFileName}"
+																				width="50%">
+																		</div>
+																	</div>
+																	<div class="col-4 align-self-center history_item_text">[[${buyDetail.itemVO.itemName}]]</div>
+																	<div class="col-3 align-self-center history_item_text">[[${buyDetail.buyCnt}]]
+																		개</div>
+																	<div class="col-2 align-self-center history_item_text">[[${#numbers.formatCurrency(buyDetail.detailBuyPrice)}]]
+																		원</div>
+																</div>
+															</div>
+														</div>
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+								</th:block>
+							</div>
+						</th:block>
+						<th:block th:if="${#lists.size(purchaseList) == 0}">
+							<div class="col text-center">
+								<h3>구매내역이 없어요.</h3>
+							</div>
+						</th:block>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</th:block>
+
+<!-- 연결해야 할 외부 js파일 -->
+<th:block layout:fragment="content_js">
+	<script type="text/javascript"
+		src="/js/content/buy/purchase_history.js"></script>
+</th:block>
+</html>

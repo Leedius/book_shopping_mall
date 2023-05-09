@@ -1,0 +1,559 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- 해당 파일에 모든 쿼리문을 작성 -->
+<mapper namespace="adminMapper">
+	<resultMap type="com.study.shop.admin.vo.AdminMenuVO"
+		id="adminMenu">
+		<id column="MENU_CODE" property="menuCode" />
+		<result column="MENU_NAME" property="menuName" />
+		<result column="MENU_URL" property="menuUrl" />
+	</resultMap>
+	<resultMap type="com.study.shop.admin.vo.AdminSubMenuVO"
+		id="adminSubMenu">
+		<id column="SUB_MENU_CODE" property="subMenuCode" />
+		<result column="SUB_MENU_NAME" property="subMenuName" />
+		<result column="SUB_MENU_URL" property="subMenuUrl" />
+		<result column="MENU_CODE" property="menuCode" />
+	</resultMap>
+	<resultMap type="com.study.shop.admin.vo.TotalRevenueVO"
+		id="totalRevenue">
+		<id column="YEAR" property="year" />
+		<result column="MONTH" property="month" />
+		<result column="REVENUE" property="revenue" />
+	</resultMap>
+	<resultMap type="com.study.shop.admin.vo.TotalRevenue2VO"
+		id="totalRevenue2">
+		<id column="YEAR" property="year" />
+		<result column="M_01" property="m_01" />
+		<result column="M_02" property="m_02" />
+		<result column="M_03" property="m_03" />
+		<result column="XM_04" property="m_04" />
+		<result column="M_05" property="m_05" />
+		<result column="M_06" property="m_06" />
+		<result column="M_07" property="m_07" />
+		<result column="M_08" property="m_08" />
+		<result column="M_09" property="m_09" />
+		<result column="M_10" property="m_10" />
+		<result column="M_11" property="m_11" />
+		<result column="M_12" property="m_12" />
+	</resultMap>
+	<resultMap type="com.study.shop.admin.vo.OrderStatusVO"
+		id="orderStatus">
+		<id column="ORDER_NUM" property="orderNum" />
+		<result column="STATUS_CODE" property="statusCode" />
+		<result column="BUY_CODE" property="buyCode" />
+		<result column="MEM_ID" property="memId" />
+		<result column="UPDATE_DATE" property="updateDate" />
+		<result column="ROW_NUM" property="rowNum" />
+		<association property="memberVO"
+			resultMap="memberMapper.member"></association>
+		<association property="buyVO" resultMap="buyMapper.buy"></association>
+		<association property="statusInfoVO"
+			resultMap="statusInfo"></association>
+	</resultMap>
+	<resultMap type="com.study.shop.admin.vo.StatusInfoVO"
+		id="statusInfo">
+		<id column="STATUS_CODE" property="statusCode" />
+		<result column="STATUS_NAME" property="statusName" />
+	</resultMap>
+
+	<!-- 어드민 메뉴 리스트 조회 -->
+	<select id="getAdminMenuList" resultMap="adminMenu">
+		SELECT MENU_CODE
+		,
+		MENU_NAME
+		, MENU_URL
+		FROM ADMIN_MENU
+	</select>
+
+	<!-- 어드민 서브 메뉴 리스트 조회 -->
+	<select id="getAdminSubMenuList" resultMap="adminSubMenu">
+		SELECT SUB_MENU_CODE
+		, SUB_MENU_NAME
+		, SUB_MENU_URL
+		, MENU_CODE
+		FROM ADMIN_SUB_MENU
+		WHERE
+		MENU_CODE = #{menuCode}
+	</select>
+
+	<!-- 카테고리 관리 페이지에서 카테고리 목록 조회 -->
+	<select id="getCateListForAdmin" resultMap="itemMapper.category">
+		SELECT CATE_CODE
+		,
+		CATE_NAME
+		, ORDER_NUM
+		, IS_USE
+		FROM ITEM_CATEGORY
+		ORDER BY ORDER_NUM ASC
+	</select>
+
+	<!-- 카테고리 등록 -->
+	<insert id="regCate">
+		INSERT INTO ITEM_CATEGORY (
+		CATE_CODE
+		, CATE_NAME
+		, ORDER_NUM
+		) VALUES (
+		(SELECT
+		'CATE_'||LPAD(NVL(MAX(TO_NUMBER(SUBSTR(CATE_CODE, 6))), 0) + 1, 3,
+		'0')
+		FROM ITEM_CATEGORY)
+		, #{cateName}
+		, (SELECT NVL(MAX(ORDER_NUM), 0) + 1
+		FROM ITEM_CATEGORY)
+		)
+	</insert>
+
+	<!-- 카테고리 중복 확인 -->
+	<select id="checkCateName" resultType="int">
+		SELECT COUNT(CATE_CODE)
+		FROM ITEM_CATEGORY
+		WHERE
+		CATE_NAME = #{cateName}
+	</select>
+
+	<!-- 카테고리 삭제 -->
+	<delete id="deleteCategory">
+		DELETE
+		FROM ITEM_CATEGORY
+		WHERE
+		CATE_CODE = #{cateCode}
+	</delete>
+
+	<!-- isUse업데이트 -->
+	<update id="updateIsUse">
+		UPDATE ITEM_CATEGORY
+		SET IS_USE = DECODE(IS_USE, 'Y',
+		'N', 'N', 'Y')
+		WHERE CATE_CODE = #{cateCode}
+	</update>
+
+	<!-- 상품 등록 -->
+	<insert id="regItem">
+		INSERT INTO SHOP_ITEM (
+		ITEM_CODE
+		, CATE_CODE
+		, ITEM_NAME
+		, ITEM_PRICE
+		, ITEM_STOCK
+		, ITEM_INTRO
+		, ITEM_STATUS
+		) VALUES (
+		#{itemCode}
+		, #{cateCode}
+		, #{itemName}
+		, #{itemPrice}
+		, #{itemStock}
+		, #{itemIntro}
+		, #{itemStatus}
+		)
+	</insert>
+
+	<!-- 다음 등록될 상품 코드 조회 -->
+	<select id="getNextItemCode" resultType="String">
+		SELECT
+		'ITEM_'||LPAD(NVL(MAX(TO_NUMBER(SUBSTR(ITEM_CODE, 6))), 0) + 1, 3,
+		'0')
+		FROM SHOP_ITEM
+	</select>
+
+	<!-- 다음 등록될 이미지 코드 조회 -->
+	<select id="getNextImgCode" resultType="String">
+		SELECT
+		'IMG_'||LPAD(NVL(MAX(TO_NUMBER(SUBSTR(IMG_CODE, 5))), 0) + 1, 3,'0')
+		FROM ITEM_IMG
+	</select>
+
+	<!-- 이미지 등록 -->
+	<insert id="regImgs">
+		INSERT INTO ITEM_IMG (
+		IMG_CODE
+		, ORIGIN_FILE_NAME
+		, ATTACHED_FILE_NAME
+		, IS_MAIN
+		, ITEM_CODE
+		)
+		<!-- collection은 jsp에서 items와 같고, item은 var와 같다. -->
+		<!-- separator -> 중간 중간 구문자를 넣는다. 마지막에는 자동으로 사용을 하지않는다. -->
+		<!-- imgList -> img.getImgList(); -->
+		<foreach collection="imgList" item="img" separator="UNION ALL"
+			index="i">
+			SELECT (SELECT 'IMG_'||LPAD(NVL(MAX(TO_NUMBER(SUBSTR(IMG_CODE,
+			5))), 0) + 1 + #{i}, 3, '0')
+			FROM ITEM_IMG)
+			, #{img.originFileName}
+			,
+			#{img.attachedFileName}
+			, #{img.isMain}
+			, #{img.itemCode}
+			FROM DUAL
+		</foreach>
+	</insert>
+
+	<!-- 상품 목록 조회(검색 기능 포함) -->
+	<select id="getItemList" resultMap="itemMapper.item">
+		SELECT ITEM_CODE
+		, ITEM_NAME
+		, DECODE(ITEM_STATUS, 1, '판매중', 2, '준비중',
+		3, '매진') AS ITEM_STATUS_NAME
+		, ITEM_STOCK
+		, CATE_NAME
+		FROM SHOP_ITEM
+		ITEM, ITEM_CATEGORY CATE
+		WHERE ITEM.CATE_CODE = CATE.CATE_CODE
+		<!-- 검색 조건 -->
+		<!-- searchVO.searchItemName != null 이조건을 넣을시 -->
+		<!-- 상품관리 페이지 관리 갈 때 searchVO자체가 NULL이기 때문에 오류가난다. -->
+		<if test="searchVO != null">
+			<if test='!searchVO.searchItemName.equals("")'>
+				AND UPPER(ITEM_NAME) LIKE
+				'%'||UPPER(#{searchVO.searchItemName})||'%'
+			</if>
+			<if
+				test="searchVO.searchCateCode != null and searchVO.searchCateCode.length != 0">
+				AND ITEM.CATE_CODE IN
+				<foreach collection="searchVO.searchCateCode"
+					item="cateCode" open="(" separator="," close=")">'${cateCode}'
+				</foreach>
+			</if>
+			<if test='searchVO.searchItemStatus != 0'>
+				AND ITEM_STATUS = #{searchVO.searchItemStatus}
+			</if>
+			<!-- BETWEEN 둘다 포함 -->
+			<if
+				test='!searchVO.searchMinItemStock.isEmpty() and searchVO.searchMinItemStock != 0'>
+				AND ITEM_STOCK &gt;= TO_NUMBER(#{searchVO.searchMinItemStock})
+			</if>
+			<if
+				test='!searchVO.searchMaxItemStock.isEmpty() and searchVO.searchMaxItemStock != 0'>
+				AND ITEM_STOCK &lt;= TO_NUMBER(#{searchVO.searchMaxItemStock})
+			</if>
+		</if>
+		ORDER BY ITEM_CODE DESC
+	</select>
+
+	<!-- 상품관리 : 상품 상세 정보 조회 -->
+	<select id="getItemDetailAjax" resultMap="itemMapper.item">
+		SELECT ITEM.ITEM_CODE
+		, CATE_CODE
+		, ITEM_NAME
+		, ITEM_STATUS
+		, ITEM_STOCK
+		, ITEM_INTRO
+		, ITEM_PRICE
+		, IMG_CODE
+		, ORIGIN_FILE_NAME
+		, ATTACHED_FILE_NAME
+		, IS_MAIN
+		FROM SHOP_ITEM ITEM, ITEM_IMG IMG
+		WHERE ITEM.ITEM_CODE =
+		IMG.ITEM_CODE
+		AND ITEM.ITEM_CODE = #{itemCode}
+	</select>
+
+	<!-- 상품 정보 수정 -->
+	<update id="updateItemInfo">
+		UPDATE SHOP_ITEM
+		SET CATE_CODE = #{cateCode}
+		, ITEM_NAME = #{itemName}
+		, ITEM_PRICE = #{itemPrice}
+		, ITEM_INTRO = #{itemIntro}
+		, ITEM_STATUS = #{itemStatus}
+		, ITEM_STOCK = #{itemStock}
+		WHERE
+		ITEM_CODE = #{itemCode}
+	</update>
+
+	<!-- 회원 목록 조회 -->
+	<select id="getMemberList" resultMap="memberMapper.member">
+		SELECT MEM_ID
+			, MEM_NAME
+			, GENDER
+			, TO_CHAR(JOIN_DATE, 'YYYY.MM.DD HH24:MI:SS') AS JOIN_DATE
+			, MEM_STATUS
+			, MEM_ROLE
+		FROM SHOP_MEMBER
+	</select>
+	
+	<!-- 회원권한 변경 -->
+	<update id="memRoleUpdate">
+		UPDATE SHOP_MEMBER
+		SET MEM_ROLE = #{memRole}
+		WHERE MEM_ID = #{memId}
+	</update>
+
+	<!-- 주문상태목록 조회 -->
+	<select id="getOrderStatusNameList" resultMap="statusInfo">
+		SELECT STATUS_NAME
+		, STATUS_CODE
+		FROM STATUS_INFO
+		ORDER BY STATUS_CODE ASC
+	</select>
+
+	<!-- 검색 조건에 따른 오더 개수 조회 -->
+	<select id="getOrderCount" resultType="int">
+		SELECT COUNT(ORDER_NUM)
+		FROM ORDER_STATUS OS, SHOP_BUY SB, SHOP_MEMBER SM
+		WHERE OS.BUY_CODE = SB.BUY_CODE
+		AND SB.MEM_ID = SM.MEM_ID
+		<if test="searchOrderStatus != null and searchOrderStatus.length != 0">
+			AND OS.STATUS_CODE IN
+			<foreach collection="searchOrderStatus" item="orderStatus"
+				open="(" separator="," close=")">${orderStatus}
+			</foreach>
+		</if>
+		<if test="searchValue != null and searchValue != ''">
+			AND UPPER(${searchKeyword}) LIKE
+			'%'||UPPER(#{searchValue})||'%'
+		</if>
+		<if test="fromDate != null and fromDate != ''">
+			AND TO_CHAR(SB.BUY_DATE, 'YYYY-MM-DD') &gt;=
+			#{fromDate}
+		</if>
+		<if test="toDate != null and toDate != ''">
+			AND TO_CHAR(SB.BUY_DATE, 'YYYY-MM-DD') &lt;= #{toDate}
+		</if>
+	</select>
+
+
+	<!-- 주문 관리 목록 조회 -->
+	<select id="getOrderList" resultMap="orderStatus">
+		SELECT DISTINCT ORDER_NUM
+			, SB.BUY_CODE
+			, SM.MEM_ID
+			, MEM_TELL
+			, SB.BUY_PRICE
+			, OS.STATUS_CODE
+			, (SELECT STATUS_NAME FROM STATUS_INFO
+		WHERE STATUS_CODE = OS.STATUS_CODE) AS STATUS_NAME
+			, TO_CHAR(SB.BUY_DATE, 'YYYY.MM.DD') AS BUY_DATE
+			, TO_CHAR(SB.BUY_DATE, 'YYYY.MM.DD HH24:MI:SS') AS BUY_DATE_ORDER
+		FROM ORDER_STATUS OS, SHOP_BUY SB, SHOP_MEMBER SM
+		WHERE OS.BUY_CODE = SB.BUY_CODE
+		AND SB.MEM_ID = SM.MEM_ID
+		<if
+			test="searchOrderVO.searchOrderStatus != null and searchOrderVO.searchOrderStatus.length != 0">
+			AND OS.STATUS_CODE IN
+			<foreach collection="searchOrderVO.searchOrderStatus"
+				item="orderStatus" open="(" separator="," close=")">${orderStatus}
+			</foreach>
+		</if>
+		<if
+			test="searchOrderVO.searchValue != null and searchOrderVO.searchValue != ''">
+			AND UPPER(${searchOrderVO.searchKeyword}) LIKE
+			'%'||UPPER(#{searchOrderVO.searchValue})||'%'
+		</if>
+		<if
+			test="searchOrderVO.fromDate != null and searchOrderVO.fromDate != ''">
+			AND TO_CHAR(SB.BUY_DATE, 'YYYY-MM-DD') &gt;=
+			#{searchOrderVO.fromDate}
+		</if>
+		<if
+			test="searchOrderVO.toDate != null and searchOrderVO.toDate != ''">
+			AND TO_CHAR(SB.BUY_DATE, 'YYYY-MM-DD') &lt;= #{searchOrderVO.toDate}
+		</if>
+		ORDER BY ${searchOrderVO.searchOrderBy} DESC
+		OFFSET #{pageVO.offsetCnt} ROWS FETCH FIRST #{pageVO.displayCnt} ROWS ONLY
+	</select>
+
+	<!-- 주문 관리 목록 조회 : 주문상태별 -->
+	<select id="getOrderStatus" resultMap="orderStatus">
+		SELECT DISTINCT ORDER_NUM
+			, SB.BUY_CODE
+			, SM.MEM_ID
+			, MEM_TELL
+			, SB.BUY_PRICE
+			, OS.STATUS_CODE
+			, (SELECT STATUS_NAME FROM STATUS_INFO
+		WHERE STATUS_CODE = OS.STATUS_CODE) AS STATUS_NAME
+			, TO_CHAR(OS.UPDATE_DATE, 'YYYY.MM.DD HH24:MM') AS UPDATE_DATE
+		FROM
+			ORDER_STATUS OS, SHOP_BUY SB, SHOP_MEMBER SM
+		WHERE OS.BUY_CODE = SB.BUY_CODE
+		AND SB.MEM_ID = SM.MEM_ID
+		AND OS.STATUS_CODE = #{orderStatus}
+		ORDER BY ORDER_NUM DESC
+	</select>
+	
+	<!-- 주문 목록 상세 조회 -->
+	<select id="getOrderDetailList" resultMap="buyMapper.buy">
+		SELECT
+			, SB.BUY_CODE
+			, SM.MEM_ID
+			, SB.BUY_PRICE
+			, TO_CHAR(SB.BUY_DATE, 'YYYY.MM.DD HH24:MI:SS') AS BUY_DATE_ORDER
+			, BD.ITEM_CODE
+			, SI.ITEM_NAME
+			, BD.DETAIL_BUY_PRICE
+			, ATTACHED_FILE_NAME
+		FROM SHOP_BUY SB, SHOP_MEMBER SM, BUY_DETAIL BD, SHOP_ITEM SI, ITEM_IMG IMG
+		WHERE SB.MEM_ID = SM.MEM_ID
+		AND SB.BUY_CODE = BD.BUY_CODE
+		AND BD.ITEM_CODE = SI.ITEM_CODE
+		AND SI.ITEM_CODE = IMG.ITEM_CODE
+		AND IS_MAIN = 'Y'
+	</select>
+
+	<!-- 주문 관리 목록 업데이트 : 주문 상태별 -->
+	<update id="updateOrderStatus">
+		UPDATE ORDER_STATUS
+		SET STATUS_CODE = #{statusCode} + 1
+			, UPDATE_DATE = SYSDATE
+		WHERE ORDER_NUM IN
+		<foreach collection="orderNumList" item="orderNum" open="("
+			separator="," close=")">${orderNum}</foreach>
+	</update>
+
+	<!-- 매출 조회 -->
+	<select id="getRevenueList" resultMap="totalRevenue">
+		SELECT EXTRACT(YEAR FROM BUY.BUY_DATE) AS YEAR
+			, MT.MONTH
+			, COUNT(DISTINCT BUY.BUY_CODE) AS buyCnt
+			, COUNT(NVL(BD.BUY_CNT, 0)) AS buyDetailCnt
+			, SUM(NVL(BD.DETAIL_BUY_PRICE, 0)) AS revenue
+		FROM (SELECT LPAD(0 +
+			LEVEL, 2, 0) AS MONTH FROM DUAL CONNECT BY LEVEL &lt;= 12) MT
+			LEFT
+		OUTER JOIN SHOP_BUY BUY
+		ON TO_CHAR(BUY.BUY_DATE, 'MM') = MT.MONTH AND
+		TO_CHAR(BUY.BUY_DATE, 'YYYY') = '2023'
+		LEFT OUTER JOIN BUY_DETAIL BD
+		ON
+		BUY.BUY_CODE = BD.BUY_CODE
+		GROUP BY
+		EXTRACT(YEAR FROM BUY.BUY_DATE)
+		, MT.MONTH
+		ORDER BY MT.MONTH
+	</select>
+
+	<!-- 매출 조회(VO활용) -->
+	<select id="getRevenueList3" resultMap="totalRevenue2">
+		SELECT
+		NVL(SUM(DECODE(TO_CHAR(BUY_DATE, 'MM'), '01', 1, 0)),0) AS M_01
+		, NVL(SUM(DECODE(TO_CHAR(BUY_DATE, 'MM'), '02', 1, 0)),0) AS M_02
+		, NVL(SUM(DECODE(TO_CHAR(BUY_DATE, 'MM'), '03', 1, 0)),0) AS M_03
+		, NVL(SUM(DECODE(TO_CHAR(BUY_DATE, 'MM'), '04', 1, 0)),0) AS M_04
+		, NVL(SUM(DECODE(TO_CHAR(BUY_DATE, 'MM'), '05', 1, 0)),0) AS M_05
+		, NVL(SUM(DECODE(TO_CHAR(BUY_DATE, 'MM'), '06', 1, 0)),0) AS M_06
+		, NVL(SUM(DECODE(TO_CHAR(BUY_DATE, 'MM'), '07', 1, 0)),0) AS M_07
+		, NVL(SUM(DECODE(TO_CHAR(BUY_DATE, 'MM'), '08', 1, 0)),0) AS M_08
+		, NVL(SUM(DECODE(TO_CHAR(BUY_DATE, 'MM'), '09', 1, 0)),0) AS M_09
+		, NVL(SUM(DECODE(TO_CHAR(BUY_DATE, 'MM'), '10', 1, 0)),0) AS M_10
+		, NVL(SUM(DECODE(TO_CHAR(BUY_DATE, 'MM'), '11', 1, 0)),0) AS M_11
+		, NVL(SUM(DECODE(TO_CHAR(BUY_DATE, 'MM'), '12', 1, 0)),0) AS M_12
+		FROM SHOP_BUY
+		WHERE TO_CHAR(BUY_DATE, 'YYYY') = #{year}
+		UNION ALL
+		SELECT NVL(SUM(DECODE(TO_CHAR(BUY_DATE, 'MM'), '01', BUY_PRICE,
+		0)),0) AS M_01
+		, NVL(SUM(DECODE(TO_CHAR(BUY_DATE, 'MM'), '02', BUY_PRICE, 0)),0) AS
+		M_02
+		, NVL(SUM(DECODE(TO_CHAR(BUY_DATE, 'MM'), '03', BUY_PRICE, 0)),0) AS
+		M_03
+		, NVL(SUM(DECODE(TO_CHAR(BUY_DATE, 'MM'), '04', BUY_PRICE, 0)),0) AS
+		M_04
+		, NVL(SUM(DECODE(TO_CHAR(BUY_DATE, 'MM'), '05', BUY_PRICE, 0)),0) AS
+		M_05
+		, NVL(SUM(DECODE(TO_CHAR(BUY_DATE, 'MM'), '06', BUY_PRICE, 0)),0) AS
+		M_06
+		, NVL(SUM(DECODE(TO_CHAR(BUY_DATE, 'MM'), '07', BUY_PRICE, 0)),0) AS
+		M_07
+		, NVL(SUM(DECODE(TO_CHAR(BUY_DATE, 'MM'), '08', BUY_PRICE, 0)),0) AS
+		M_08
+		, NVL(SUM(DECODE(TO_CHAR(BUY_DATE, 'MM'), '09', BUY_PRICE, 0)),0) AS
+		M_09
+		, NVL(SUM(DECODE(TO_CHAR(BUY_DATE, 'MM'), '10', BUY_PRICE, 0)),0) AS
+		M_10
+		, NVL(SUM(DECODE(TO_CHAR(BUY_DATE, 'MM'), '11', BUY_PRICE, 0)),0) AS
+		M_11
+		, NVL(SUM(DECODE(TO_CHAR(BUY_DATE, 'MM'), '12', BUY_PRICE, 0)),0) AS
+		M_12
+		FROM SHOP_BUY
+		WHERE TO_CHAR(BUY_DATE, 'YYYY') = #{year}
+	</select>
+
+	<!-- 매출 조회(Map활용) -->
+	<select id="getRevenueList2" resultType="map">
+		SELECT
+		NVL(SUM(DECODE(TO_CHAR(BUY_DATE, 'MM'), '01', 1, 0)),0) AS M_01
+		, NVL(SUM(DECODE(TO_CHAR(BUY_DATE, 'MM'), '02', 1, 0)),0) AS M_02
+		, NVL(SUM(DECODE(TO_CHAR(BUY_DATE, 'MM'), '03', 1, 0)),0) AS M_03
+		, NVL(SUM(DECODE(TO_CHAR(BUY_DATE, 'MM'), '04', 1, 0)),0) AS M_04
+		, NVL(SUM(DECODE(TO_CHAR(BUY_DATE, 'MM'), '05', 1, 0)),0) AS M_05
+		, NVL(SUM(DECODE(TO_CHAR(BUY_DATE, 'MM'), '06', 1, 0)),0) AS M_06
+		, NVL(SUM(DECODE(TO_CHAR(BUY_DATE, 'MM'), '07', 1, 0)),0) AS M_07
+		, NVL(SUM(DECODE(TO_CHAR(BUY_DATE, 'MM'), '08', 1, 0)),0) AS M_08
+		, NVL(SUM(DECODE(TO_CHAR(BUY_DATE, 'MM'), '09', 1, 0)),0) AS M_09
+		, NVL(SUM(DECODE(TO_CHAR(BUY_DATE, 'MM'), '10', 1, 0)),0) AS M_10
+		, NVL(SUM(DECODE(TO_CHAR(BUY_DATE, 'MM'), '11', 1, 0)),0) AS M_11
+		, NVL(SUM(DECODE(TO_CHAR(BUY_DATE, 'MM'), '12', 1, 0)),0) AS M_12
+		FROM SHOP_BUY
+		WHERE TO_CHAR(BUY_DATE, 'YYYY') = #{year}
+		UNION ALL
+		SELECT NVL(SUM(DECODE(TO_CHAR(BUY_DATE, 'MM'), '01', BUY_PRICE,
+		0)),0) AS M_01
+		, NVL(SUM(DECODE(TO_CHAR(BUY_DATE, 'MM'), '02', BUY_PRICE, 0)),0) AS
+		M_02
+		, NVL(SUM(DECODE(TO_CHAR(BUY_DATE, 'MM'), '03', BUY_PRICE, 0)),0) AS
+		M_03
+		, NVL(SUM(DECODE(TO_CHAR(BUY_DATE, 'MM'), '04', BUY_PRICE, 0)),0) AS
+		M_04
+		, NVL(SUM(DECODE(TO_CHAR(BUY_DATE, 'MM'), '05', BUY_PRICE, 0)),0) AS
+		M_05
+		, NVL(SUM(DECODE(TO_CHAR(BUY_DATE, 'MM'), '06', BUY_PRICE, 0)),0) AS
+		M_06
+		, NVL(SUM(DECODE(TO_CHAR(BUY_DATE, 'MM'), '07', BUY_PRICE, 0)),0) AS
+		M_07
+		, NVL(SUM(DECODE(TO_CHAR(BUY_DATE, 'MM'), '08', BUY_PRICE, 0)),0) AS
+		M_08
+		, NVL(SUM(DECODE(TO_CHAR(BUY_DATE, 'MM'), '09', BUY_PRICE, 0)),0) AS
+		M_09
+		, NVL(SUM(DECODE(TO_CHAR(BUY_DATE, 'MM'), '10', BUY_PRICE, 0)),0) AS
+		M_10
+		, NVL(SUM(DECODE(TO_CHAR(BUY_DATE, 'MM'), '11', BUY_PRICE, 0)),0) AS
+		M_11
+		, NVL(SUM(DECODE(TO_CHAR(BUY_DATE, 'MM'), '12', BUY_PRICE, 0)),0) AS
+		M_12
+		FROM SHOP_BUY
+		WHERE TO_CHAR(BUY_DATE, 'YYYY') = #{year}
+	</select>
+
+	<!-- 카테고리 별 판매 개수 조회 -->
+	<select id="getCateSaleTrend2" resultType="map">
+		SELECT IC.CATE_CODE
+		, IC.CATE_NAME
+		, SUM(COALESCE(BD.BUY_CNT,0)) AS buyCnt
+		FROM BUY_DETAIL BD,
+		ITEM_CATEGORY IC, SHOP_ITEM SI
+		WHERE BD.ITEM_CODE = SI.ITEM_CODE
+		AND
+		SI.CATE_CODE = IC.CATE_CODE
+		GROUP BY IC.CATE_CODE, IC.CATE_NAME
+	</select>
+
+	<!-- 카테고리 별 판매 개수 조회(선생님ver.) -->
+	<select id="getCateSaleTrend" resultType="map">
+		WITH IMSI_TABLE AS
+		(
+			SELECT ITEM_CODE
+				, (SELECT CATE_CODE
+			FROM SHOP_ITEM
+			WHERE ITEM_CODE = BD.ITEM_CODE) AS CATE_CODE
+				, BUY_CNT
+			FROM BUY_DETAIL BD
+		)
+		SELECT CATE_CODE
+			, COUNT(CATE_CODE)
+			, SUM(BUY_CNT) AS BUYCNT
+			, (SELECT CATE_NAME
+		FROM ITEM_CATEGORY
+		WHERE CATE_CODE = IMSI_TABLE.CATE_CODE) AS CATE_NAME
+		FROM IMSI_TABLE
+		GROUP BY
+		CATE_CODE
+	</select>
+</mapper>
+
+	

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{fragment/userInfo_layout}">
+
+<!-- 연결해야 할 외부 css파일 -->
+<th:block layout:fragment="content_css">
+	<link rel="stylesheet" href="/css/content/cart/cart_list.css">
+</th:block>
+
+<th:block layout:fragment="content">
+	<div class="row">
+		<div class="col-12">
+			<!-- 장바구니 제목줄 -->
+			<div class="row mt-4 g-4 mb-3">
+				<div class="col">
+					<h2>장바구니</h2>
+				</div>
+			</div>
+		</div>
+		<div class="col-12">
+			<!-- 장바구니 목록 -->
+			<div class="row text-center">
+				<div class="col-12 cart_list">
+					<div class="row pt-2 cart_list_title">
+						<div class="col-1 mb-2 align-self-center">
+							<input type="checkbox" id="allChk" checked>
+						</div>
+						<div class="col-2">전체선택</div>
+						<div class="col-3">
+							<div>상품 정보</div>
+						</div>
+						<div class="col-3">
+							<div>상품 수량</div>
+						</div>
+						<div class="col-2">
+							<div>상품금액</div>
+						</div>
+						<div class="col-1"></div>
+					</div>
+					<div class="row">
+						<th:block th:if="${#lists.size(cartList) != 0}">
+							<div class="col">
+								<th:block th:each="cart, state : ${cartList}">
+									<div class="row cart_list_info">
+										<div class="col-1 mb-2 mt-2 align-self-center">
+											<div class="text-center">
+												<input th:data-cartCode="${cart.cartCode}"
+													th:data-itemCode="${cart.itemVO.itemCode}"
+													th:data-cartCnt="${cart.cartCnt}"
+													th:data-detailBuyPrice="${cart.totalPrice}"
+													type="checkbox" class="chk" th:value="${cart.cartCode}"
+													onclick="checkBox()" checked>
+											</div>
+										</div>
+										<div class="col-2 mb-2 mt-2 align-self-center">
+											<th:block th:each="img : ${cart.itemVO.imgList}">
+												<img
+													th:src="${'/upload/images/item/' + img.attachedFileName}"
+													width="100%">
+											</th:block>
+										</div>
+										<div class="col-3 mb-1 align-self-center">
+											<div id="itemName"
+												th:data-itemName="${cart.itemVO.itemName}">[[${cart.itemVO.itemName}]]</div>
+										</div>
+										<div class="col-3 align-self-center">
+											<span>
+												[[${#numbers.formatCurrency(cart.itemVO.itemPrice)}]] </span> <span>
+												<input type="number" th:value="${cart.cartCnt}"
+												style="width: 3rem;" id="purchaseQuantity" min=1
+												th:onchange="sumPrice([[${cart.itemVO.itemPrice}]], this, [[${cart.itemVO.itemStock}]], [[${state.index}]])"
+												th:onkeyup="sumPrice([[${cart.itemVO.itemPrice}]], this, [[${cart.itemVO.itemStock}]], [[${state.index}]])">
+											</span> <span> <input class="btn update_btn" type="button"
+												value="수정"
+												th:onclick="updateItemQuantity([[${cart.cartCode}]], this)">
+											</span>
+										</div>
+										<div class="col-2 align-self-center">
+											<input type="hidden" class="sumPrice"
+												th:value="${cart.totalPrice}">
+											<div id="sumPrice">
+												[[${#numbers.formatCurrency(cart.totalPrice)}]]</div>
+										</div>
+										<div class="col-1 align-self-center">
+											<div>
+												<a th:onclick="delCartItem([[${cart.cartCode}]])"> <svg
+														xmlns="http://www.w3.org/2000/svg" width="25" height="25"
+														fill="currentColor" class="bi bi-bag-x"
+														viewBox="0 0 16 16">
+						  				<path fill-rule="evenodd"
+															d="M6.146 8.146a.5.5 0 0 1 .708 0L8 9.293l1.146-1.147a.5.5 0 1 1 .708.708L8.707 10l1.147 1.146a.5.5 0 0 1-.708.708L8 10.707l-1.146 1.147a.5.5 0 0 1-.708-.708L7.293 10 6.146 8.854a.5.5 0 0 1 0-.708z" />
+						  				<path
+															d="M8 1a2.5 2.5 0 0 1 2.5 2.5V4h-5v-.5A2.5 2.5 0 0 1 8 1zm3.5 3v-.5a3.5 3.5 0 1 0-7 0V4H1v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V4h-3.5zM2 5h12v9a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V5z" />
+									</svg>
+												</a>
+											</div>
+										</div>
+									</div>
+								</th:block>
+							</div>
+						</th:block>
+						<th:block th:unless="${#lists.size(cartList) != 0}">
+							<div class="col pt-2 mb-2 align-self-center" style="border-top: 2px solid silver">
+								<div>장바구니에 등록된 상품이 없습니다.</div>
+							</div>
+						</th:block>
+					</div>
+				</div>
+				<div class="col-12 cart_total_info">
+					<div class="col">
+						<span> 총 주문 금액 </span> <span id="orderTotalPrice">[[${#numbers.formatCurrency(orderTotalPrice)}]]</span>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="col-12 mt-5 text-center">
+			<div class="row">
+				<div class="col"></div>
+				<div class="col d-grid">
+					<input class="btn" type="button" value="선 택 구 매" onclick="regBuy()">
+				</div>
+				<div class="col d-grid">
+					<input class="btn" type="button" value="선 택 삭 제" onclick="deleteCarts()">
+				</div>
+				<div class="col"></div>
+			</div>
+		</div>
+	</div>
+</th:block>
+
+<!-- 연결해야 할 외부 js파일 -->
+<th:block layout:fragment="content_js">
+	<script type="text/javascript" src="/js/content/cart/cart_list.js"></script>
+</th:block>
+</html>

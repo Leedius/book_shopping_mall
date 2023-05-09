@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<th:block th:fragment="userSideFragment">
+	<div class="row mt-3 g-4">
+		<div class="col">
+			<div class="list-group">
+				<!-- 강조용 코드 -->
+				<a th:href="@{/cart/cartList(activeMenu='cartList')}" class="list-group-item list-group-item-action" th:classappend="${activeMenu == 'cartList'} ? 'active' : ''">
+					장바구니 목록
+				</a>
+				<a th:href="@{/buy/purchaseList(activeMenu='purchaseHistory')}" class="list-group-item list-group-item-action" th:classappend="${activeMenu == 'purchaseHistory'} ? 'active' : ''">
+					구매 내역
+				</a>
+				<a th:href="@{/member/updateMemberInfo(activeMenu='updateMemberInfo')}" class="list-group-item list-group-item-action" th:classappend="${activeMenu == 'updateMemberInfo'} ? 'active' : ''">
+					개인정보 변경
+				</a>
+			</div>
+		</div>
+	</div>
+</th:block>
+</html>

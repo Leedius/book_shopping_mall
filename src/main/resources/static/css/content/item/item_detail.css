@@ -1,0 +1,28 @@
+@charset "UTF-8";
+
+/* 상품 가격 글자 */
+.item_price{
+	font-size: 2rem;
+	font-weight: bold;
+}
+
+.item_Intro{
+	text-align: left;
+}
+
+.item_stock{
+	text-align: right;
+	font-size: 1rem;
+}
+
+.preparing{
+	background: #b7ffe9;
+	text-align: center;
+	color: #3b86e8;
+}
+
+.sold_out{
+	background: #b7ffe9;
+	text-align: center;
+	color: red;
+}

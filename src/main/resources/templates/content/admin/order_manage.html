@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{fragment/admin_layout}">
+
+<!-- 연결해야 할 외부 css파일 -->
+<th:block layout:fragment="content_css">
+	<link rel="stylesheet" href="/css/content/admin/order_manage.css">
+</th:block>
+
+<th:block layout:fragment="content">
+	<div class="row">
+		<div class="col-12">
+			<div class="row mt-4 g-1 mb-3">
+				<!-- 구매 내역 제목 줄 -->
+				<div class="col">
+					<h2>주문 관리</h2>
+				</div>
+			</div>
+			<div class="row mt-4 g-2 mb-5">
+				<!-- 구매 내역 제목 줄 -->
+				<div class="col-12">
+					<form th:action="@{/admin/orderManage}" method="post"
+						id="searchOrderForm">
+						<input type="hidden" th:value="${pageVO.nowPage}" id="nowPage" name="nowPage">
+						<input type="hidden" id="searchOrderBy" th:value="${searchOrderVO.searchOrderBy}" name="searchOrderBy">
+						<div class="row">
+							<div class="col-1 align-self-center mb-2">
+								<span> 주문상태 </span>
+							</div>
+							<div class="col-7 align-self-center mb-2">
+								<div class="input-group">
+									<div class="form-check-inline">
+										<input type="checkbox" class="form-check-input" id="searchAllChk"
+											th:checked="${searchOrderVO.searchOrderStatus == null or searchOrderVO.searchOrderStatus.length == 5}">
+										<label class="form-check-label" for="allChk">전체</label>
+									</div>
+									<th:block th:each="statusInfo : ${statusInfoList}">
+										<div class="form-check-inline">
+											<input type="checkbox" name="searchOrderStatus"
+												class="form-check-input searchChk"
+												th:value="${statusInfo.statusCode}"
+												th:checked="${searchOrderVO.searchOrderStatus == null ? true : #lists.contains(searchOrderVO.searchOrderStatus, statusInfo.statusCode)}">
+											<label class="form-check-label">[[${statusInfo.statusName}]]</label>
+										</div>
+									</th:block>
+								</div>
+							</div>
+							<div class="col-1"></div>
+							<div class="col-3 mb-2 text-right">
+								<span class="d-grid"> <input class="btn search_button"
+									type="button" value="검 색" onclick="searchOrder()">
+								</span>
+							</div>
+							<div class="col-1 mb-3 align-self-center">
+								<span> 주문일시 </span>
+							</div>
+							<div class="col-3 mb-3">
+								<div class="input-group align-self-center">
+									<span class="input-group-text">from</span> <input
+										class="form-control" type="date" name="fromDate"
+										th:value="${searchOrderVO.fromDate}">
+								</div>
+							</div>
+							<div class="col-3 mb-2">
+								<div class="input-group align-self-center">
+									<span class="input-group-text">to</span> <input
+										class="form-control" type="date" name="toDate"
+										th:value="${searchOrderVO.toDate}">
+								</div>
+							</div>
+							<div class="col-5">
+								<div class="input-group align-self-center">
+									<select class="form-select" name="searchKeyword"
+										th:value="${searchOrderVO.searchKeyword}"
+										id="selectInputGroup">
+										<option value="SB.BUY_CODE"
+											th:selected="${searchOrderVO.searchKeyword == 'SB.BUY_CODE'}">구매코드</option>
+										<option value="SB.MEM_ID"
+											th:selected="${searchOrderVO.searchKeyword == 'SB.MEM_ID'}">구매자ID</option>
+										<option value="MEM_TELL"
+											th:selected="${searchOrderVO.searchKeyword == 'MEM_TELL'}">연락처</option>
+									</select> <input class="form-control" name="searchValue" type="text"
+										th:value="${searchOrderVO.searchValue}">
+								</div>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-2 d-grid">
+								<input class="btn" id="order_buyDate" type="button" value="날 짜 순"
+									th:onclick="searchInfoToGoPaging([[${pageVO.nowPage}]], 'BUY_DATE_ORDER')">
+							</div>
+							<div class="col-2 d-grid">
+								<input class="btn" id="order_statusCode" type="button" value="상 태 순"
+									th:onclick="searchInfoToGoPaging([[${pageVO.nowPage}]], 'OS.STATUS_CODE')">
+							</div>
+							<div class="col-8 order_info_label">*상태순으로 정렬시 배송완료, 배송중,
+								배송준비, 주문확인, 주문접수 순으로 조회됩니다.</div>
+						</div>
+					</form>
+				</div>
+			</div>
+			<div class="row">
+				<!-- 주문 목록(검색) 테이블 -->
+				<div class="col-12">
+					<div class="accordion mb-5" id="accordionExample">
+						<div class="accordion-item">
+							<h2 class="accordion-header" id="headingOne">
+								<button class="accordion-button" type="button"
+									data-bs-toggle="collapse" data-bs-target="#collapseOne-0"
+									aria-expanded="true" aria-controls="collapseOne-0">주문
+									목록</button>
+							</h2>
+							<div id="collapseOne-0" class="accordion-collapse collapse show">
+								<div class="accordion-body">
+									<div class="row">
+										<table class="table text-center">
+											<colgroup>
+												<col>
+												<col>
+												<col width="">
+												<col width="">
+												<col width="">
+												<col width="">
+												<col width="">
+											</colgroup>
+											<thead class="table_thead">
+												<tr>
+													<td><input type="checkbox" class="form-check-input"
+														id="order_allChk"></td>
+													<td>No</td>
+													<td>구매CODE</td>
+													<td>구매자ID</td>
+													<td>구매자TELL</td>
+													<td>결재PRICE</td>
+													<td>주문STATUS</td>
+													<td>구매일</td>
+												</tr>
+											</thead>
+											<tbody>
+												<th:block th:if="${#lists.size(orderStatusList) == 0}">
+													<tr>
+														<td colspan="7">주문 정보가 없습니다.</td>
+													</tr>
+												</th:block>
+												<th:block th:unless="${#lists.size(orderStatusList) == 0}">
+													<tr th:each="orderStatus, state : ${orderStatusList}"
+													th:onclick='orderModal([[${orderStatus.buyCode}]], [[${orderStatus.memId}]])' style="cursor: pointer;">
+														<td><input type="checkbox"
+															class="form-check-input order_chk"></td>
+														<td>[[${#lists.size(orderStatusList) - state.index}]]</td>
+														<td>[[${orderStatus.buyCode}]]</td>
+														<td>[[${orderStatus.memId}]]</td>
+														<td>[[${orderStatus.memberVO.memTell}]]</td>
+														<td>[[${#numbers.formatCurrency(orderStatus.buyVO.buyPrice)}]]</td>
+														<td>[[${orderStatus.statusInfoVO.statusName}]]</td>
+														<td>[[${orderStatus.buyVO.buyDate}]]</td>
+													</tr>
+												</th:block>
+											</tbody>
+										</table>
+									</div>
+									<div class="row justify-content-center">
+										<div class="col-3">
+											<nav aria-label="Page navigation example">
+												<ul class="pagination custom-pagination">
+													<li class="page-item" th:classappend="${pageVO.prev} == false ? 'disabled' : ''"><a class="page-link" href="#"
+														th:onclick='searchInfoToGoPaging([[${pageVO.beginPage-1}]], [[${searchOrderVO.searchOrderBy}]])'
+														aria-label="Previous"> <span aria-hidden="true">&laquo;</span>
+													</a></li>
+													<li th:each="pageNum : ${#numbers.sequence(pageVO.beginPage, pageVO.endPage)}"  class="page-item">
+														<a class="page-link" href="#" th:onclick='searchInfoToGoPaging([[${pageNum}]], [[${searchOrderVO.searchOrderBy}]])' th:classappend="${pageVO.nowPage == pageNum} ? 'active' : ''">[[${pageNum}]]</a>
+													</li>
+													<li class="page-item" th:classappend="${pageVO.next} == false ? 'disabled' : ''"><a class="page-link" href="#"
+													th:onclick='searchInfoToGoPaging([[${pageVO.endPage+1}]], [[${searchOrderVO.searchOrderBy}]])'
+														aria-label="Next"> <span aria-hidden="true">&raquo;</span>
+													</a></li>
+												</ul>
+											</nav>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col" id="orderStatusAjax">
+					<th:block th:each="orderStatus,state : ${orderStatusMap}">
+						<div class="row table_wrap">
+							<!-- 신규 주문 내역 테이블 -->
+							<!-- 다른방법 주석 -->
+							<!-- <div>[[${statusInfoList.get(state.index).statusName}]]</div> -->
+							<div>[[${titleMap[orderStatus.key]}]]</div>
+							<div class="col-12" style="padding-right: 0;">
+								<table class="table text-center table-fixed-header mb-0">
+									<colgroup>
+										<col width="5%">
+										<col width="5%">
+										<col width="10%">
+										<col width="15%">
+										<col width="20%">
+										<col width="15%">
+										<col width="10%">
+										<col width="20%">
+									</colgroup>
+									<thead class="table_thead">
+										<tr>
+											<td><input type="checkbox" class="form-check-input"
+												th:id="allChk" th:onclick="allCheck(this)"></td>
+											<td>No</td>
+											<td>구매CODE</td>
+											<td>구매자ID</td>
+											<td>구매자TELL</td>
+											<td>결재PRICE</td>
+											<td>주문STATUS</td>
+											<td>DATE</td>
+										</tr>
+									</thead>
+								</table>
+							</div>
+							<div class="col-12 tbody-wrapper" style="padding-right: 0;">
+								<table class="table text-center mb-0">
+									<colgroup>
+										<col width="5%">
+										<col width="5%">
+										<col width="10%">
+										<col width="15%">
+										<col width="20%">
+										<col width="15%">
+										<col width="10%">
+										<col width="20%">
+									</colgroup>
+									<tbody>
+										<th:block th:if="${#lists.size(orderStatus.value) == 0}">
+											<tr>
+												<td colspan="7" th:text="${orderStatus.key}+' 내역이 없습니다.'"></td>
+											</tr>
+										</th:block>
+										<th:block th:unless="${#lists.size(orderStatus.value) == 0}">
+											<tr th:each="orderInfo, infoState : ${orderStatus.value}"
+												class="orderInfo">
+												<td><input type="checkbox"
+													class="form-check-input chk"
+													th:value="${orderInfo.orderNum}"
+													th:onclick="chkboxClick(this)"></td>
+												<td>[[${#lists.size(orderStatus.value) -
+													infoState.index}]]</td>
+												<td>[[${orderInfo.buyCode}]]</td>
+												<td>[[${orderInfo.memId}]]</td>
+												<td>[[${orderInfo.memberVO.memTell}]]</td>
+												<td>[[${#numbers.formatCurrency(orderInfo.buyVO.buyPrice)}]]</td>
+												<td>[[${orderInfo.statusInfoVO.statusName}]]</td>
+												<td>[[${orderInfo.updateDate}]]</td>
+											</tr>
+										</th:block>
+									</tbody>
+								</table>
+							</div>
+							<div th:if="${!state.last}"
+								class="text-center d-grid button_wrap mb-5"
+								style="padding-right: 0;">
+								<input class="btn" type="button"
+									th:value="|${statusInfoList.get(state.index).statusName} -> ${statusInfoList.get(state.index+1).statusName}|"
+									th:onclick="nextLevel(this, [[${state.index + 1}]])">
+							</div>
+						</div>
+					</th:block>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="modal fade" id="orderDetailModal" data-bs-keyboard="false"
+		tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+		<div class="modal-dialog modal-lg">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h1 class="modal-title fs-5" id="staticBackdropLabel">주문Detail</h1>
+					<button type="button" class="btn-close" data-bs-dismiss="modal"
+						aria-label="Close"></button>
+				</div>
+				<div class="modal-body" id="orderModalBody" style="text-align: center;">
+				</div>
+			</div>
+		</div>
+	</div>
+</th:block>
+</th:block>
+
+<!-- 연결해야 할 외부 js파일 -->
+<th:block layout:fragment="content_js">
+	<script type="text/javascript" src="/js/content/admin/order_manage.js"></script>
+</th:block>
+</html>

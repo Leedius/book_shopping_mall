@@ -1,0 +1,55 @@
+@charset "UTF-8";
+
+.search_table_title {
+	background-color: #b7ffe9 !important;
+	color: black;
+}
+
+.item_search_table>:not(caption)>*>* {
+	padding: 0px;
+}
+
+.sub_title {
+	padding-top: 0.6rem !important;
+	padding-bottom: 0.6rem !important;
+}
+
+.itemInfo>div {
+	vertical-align: middle !important;
+}
+
+.rounded {
+	border-radius: 5px !important;
+}
+
+.item_list_title {
+	background-color: #b7ffe9 !important;
+	color: black;
+	
+}
+
+/* 상품 수정 부분 선생님버전css */
+.title-mg {
+	margin-top: 0.5rem;
+	margin-bottom: 0.5rem;
+}
+
+.update-content {
+	background-color: #b7ffe9;
+	margin-right: 0rem;
+	padding-top: 1rem;
+	padding-bottom: 1rem;
+	border-radius: 1rem;
+	margin-bottom: 0.7rem;
+}
+
+.updateBtn{
+	padding: 0;
+	text-align: center;
+	font-size: 1.3rem;
+	font-weight: bold;
+}
+
+.sub-title {
+	margin-top: 0.5rem;
+}

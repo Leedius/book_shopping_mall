@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{fragment/admin_layout}">
+
+<!-- 연결해야 할 외부 css파일 -->
+<th:block layout:fragment="content_css">
+	<!-- <link rel="stylesheet" href=""> -->
+</th:block>
+
+<th:block layout:fragment="content">
+	<div class="row">
+		<div class="col-12">
+			<!-- 구매 내역 제목 줄 -->
+			<div class="row mt-4 g-4 mb-3">
+				<div class="col">
+					<h2>회원 관리</h2>
+				</div>
+			</div>
+		</div>
+		<div class="col-12">
+			<!-- 구매 내역 제목 줄 -->
+			<div class="row mt-4 g-4 mb-3">
+				<div class="col-12">회원 목록</div>
+				<div class="col-12 mt-0">
+					<table class="table text-center align-middle">
+						<colgroup>
+							<col width="">
+							<col width="">
+							<col width="">
+							<col width="">
+							<col width="">
+						</colgroup>
+						<thead>
+							<tr style="background-color: #b7ffe9">
+								<td>ID</td>
+								<td>NAME</td>
+								<td>GENDER</td>
+								<td>JOIN DATE</td>
+								<td>STATUS</td>
+								<td>ROLE</td>
+							</tr>
+						</thead>
+						<tbody>
+							<th:block th:if="${#lists.size(memberList) == 0}">
+								<tr>
+									<td colspan="4">가입된 회원이 없습니다</td>
+								</tr>
+							</th:block>
+							<th:block th:unless="${#lists.size(memberList) == 0}">
+								<th:block th:each="member, state : ${memberList}">
+									<tr>
+										<td>[[${member.memId}]]</td>
+										<td>[[${member.memName}]]</td>
+										<td>[[${member.gender}]]</td>
+										<td>[[${member.joinDate}]]</td>
+										<th:block th:if="${member.memStatus == 1}">
+											<td>활동중</td>
+										</th:block>
+										<th:block th:if="${member.memStatus == 2}">
+											<td>휴먼계정</td>
+										</th:block>
+										<th:block th:if="${member.memStatus == 3}">
+											<td>탈퇴계정</td>
+										</th:block>
+										<td>
+											<input class="form-check-input mt-0 mr-1" type="radio" value="ADMIN" th:name="'memRole'+${state.count}" th:checked="${member.memRole == 'ADMIN'}" th:onchange="roleChange([[${member.memId}]], this);">ADMIN
+											<input class="form-check-input mt-0 mr-1" type="radio" value="MANAGER" th:name="'memRole'+${state.count}" th:checked="${member.memRole == 'MANAGER'}" th:onchange="roleChange([[${member.memId}]], this);">MANAGE
+											<input class="form-check-input mt-0 mr-1" type="radio" value="USER" th:name="'memRole'+${state.count}" th:checked="${member.memRole == 'USER'}" th:onchange="roleChange([[${member.memId}]], this);">USER
+										</td>
+									</tr>
+								</th:block>
+							</th:block>
+						</tbody>
+					</table>
+				</div>
+				<div class="col-6"></div>
+			</div>
+		</div>
+	</div>
+</th:block>
+
+<!-- 연결해야 할 외부 js파일 -->
+<th:block layout:fragment="content_js">
+	 <script type="text/javascript" src="/js/content/admin/member_manage.js"></script> 
+</th:block>
+</html>

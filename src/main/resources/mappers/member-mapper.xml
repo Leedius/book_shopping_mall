@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- 해당 파일에 모든 쿼리문을 작성 -->
+<mapper namespace="memberMapper">
+	<!-- type에는 위치정보를 다적어야한다 -->
+	<resultMap type="com.study.shop.member.vo.MemberVO"
+		id="member">
+		<id column="MEM_ID" property="memId" />
+		<result column="MEM_PW" property="memPw" />
+		<result column="MEM_NAME" property="memName" />
+		<result column="GENDER" property="gender" />
+		<result column="MEM_TELL" property="memTell" />
+		<result column="MEM_ADDR" property="memAddr" />
+		<result column="ADDR_DETAIL" property="addrDetail" />
+		<result column="MEM_EMAIL" property="memEmail" />
+		<result column="MEM_ROLE" property="memRole" />
+		<result column="MEM_STATUS" property="memStatus" />
+		<result column="JOIN_DATE" property="joinDate" />
+	</resultMap>
+
+	<!-- 아이디 중복 체크 -->
+	<select id="isDuplicateMemId" resultType="int">
+		SELECT COUNT(MEM_ID)
+		FROM SHOP_MEMBER
+		WHERE MEM_ID = #{memId}
+	</select>
+
+
+	<!--배열인 memTell다른방법 예) 010, 1111, 2222 MemberVO에 memTells를 만들고 입력받는 3개의 
+		name을 memTells로 만들고 아래의 #{memTell}대신 foreach 문을 사용한다. 이렇게 하면 010 - 1111 - 
+		1111 일렇게 중간에 공백이 생기는데 TRIM을 써서 우선 양쪽끝의 공백을 제거하고 REPLACE를 사용하여 안쪽의 공백을 제거한다. 
+		$,#차이점 #은 반복하면서 ''붙어서 나오지만 $은 ''가 안붙는다. , REPLACE( <foreach collection="memTells" 
+		item="tell" open="'" separator="-" close="'"> ${tell} </foreach>, ' ', '') -->
+	<!-- 회원가입 -->
+	<insert id="regMember">
+		INSERT INTO SHOP_MEMBER (
+		MEM_ID
+			, MEM_PW
+			, MEM_NAME
+			, GENDER
+			, MEM_TELL
+			, MEM_ADDR
+			, ADDR_DETAIL
+		) VALUES (
+			#{memId}
+			, #{memPw}
+			, #{memName}
+			, #{gender}
+			, REPLACE(
+			<foreach collection="memTells" item="tell" open="'" separator="-" close="'">${tell}</foreach>
+			, ' ', '')
+			, #{memAddr}
+			, #{addrDetail}
+		)
+	</insert>
+
+	<!-- 로그인 -->
+	<select id="login" resultMap="member">
+		SELECT MEM_ID
+			, MEM_PW
+			, MEM_NAME
+			, MEM_ROLE
+			, MEM_EMAIL
+			<!-- , MEM_STATUS -->
+		FROM SHOP_MEMBER
+		WHERE MEM_ID = #{memId}
+		<!-- AND MEM_PW = #{memPw} -->
+		AND MEM_STATUS != 3
+		<if test="memName != null and memName != ''">
+			AND MEM_NAME = #{memName}
+		</if>
+	</select>
+	
+	<!-- 이메일 정보 조회 -->
+	<select id="getMemEmail" resultType="String">
+		SELECT MEM_EMAIL
+		FROM SHOP_MEMBER
+		WHERE MEM_ID = #{memId}
+		AND MEM_NAME = #{memName}
+	</select>
+	
+	<!-- 회원정보 수정 -->
+	<update id="updateUserInfo">
+		UPDATE SHOP_MEMBER
+		SET MEM_PW = #{memPw}
+		<if test="memName != null and memName != ''">
+			, MEM_NAME = #{memName} 
+		</if>
+		<if test="memAddr != null and memAddr != ''">
+			, MEM_ADDR = #{memAddr}
+		</if>
+		<if test="memAddr != null and memAddr != ''">
+			, ADDR_DETAIL = #{addrDetail}
+		</if>
+		WHERE MEM_ID = #{memId}
+	</update>
+	
+	<!-- 비밀번호 찾기(초기화) -->
+	<update id="findPw">
+		UPDATE SHOP_MEMBER
+		SET MEM_PW = #{memPw}
+		WHERE MEM_ID = #{memId}
+		AND MEM_NAME = #{memName}
+	</update>
+	
+</mapper>
+
+	

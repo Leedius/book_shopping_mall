@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{fragment/admin_layout}">
+
+<!-- 연결해야 할 외부 css파일 -->
+<th:block layout:fragment="content_css">
+	<link rel="stylesheet" href="/css/content/admin/order_manage.css">
+</th:block>
+
+<th:block layout:fragment="content">
+	<div class="row">
+		<div class="col-12">
+			<div class="row mt-4 g-4 mb-3">
+				<!-- 구매 내역 제목 줄 -->
+				<div class="col">
+					<h2>주문 관리</h2>
+				</div>
+			</div>
+			<div class="row mt-4 g-4 mb-3">
+				<!-- 구매 내역 제목 줄 -->
+				<div class="col-12">
+					<form th:action="@{/admin/orderManage}" method="post"
+						id="searchOrderForm">
+						<div class="row">
+							<div class="col-1 align-self-center mb-2">
+								<span> 주문상태 </span>
+							</div>
+							<div class="col-7 align-self-center mb-2">
+								<span class="form-check-inline"> <input type="checkbox"
+									class="form-check-input" id="allChk"
+									th:checked="${searchOrderVO.searchOrderStatus == null or #arrays.contains(searchOrderVO.searchOrderStatus, 'all')}">전체
+								</span>
+								<th:block th:each="statusInfo : ${statusInfoList}">
+									<span class="form-check-inline"> <input type="checkbox"
+										name="searchOrderStatus" class="form-check-input chk"
+										th:value="${statusInfo.statusCode}"
+										th:checked="${searchOrderVO.searchOrderStatus == null or #arrays.contains(searchOrderVO.searchOrderStatus, #strings.toString(statusInfo.statusCode))}">[[${statusInfo.statusName}]]
+									</span>
+								</th:block>
+							</div>
+							<div class="col-3 mb-2 text-right">
+								<span style="margin-right: 4.3rem;" class="d-grid"> <input
+									class="btn search_button" type="button" value="검 색"
+									onclick="searchOrder()">
+								</span>
+							</div>
+							<div class="col-1"></div>
+							<div class="col-1 align-self-center">
+								<span> 주문일시 </span>
+							</div>
+							<div class="col-5 mb-2">
+								<span>from</span> <span> <input
+									class="form-control-inline" type="date" name="fromDate"
+									th:value="${searchOrderVO.fromDate}">
+								</span> <span>to</span> <span> <input
+									class="form-control-inline" type="date" name="toDate"
+									th:value="${searchOrderVO.toDate}">
+								</span>
+							</div>
+							<div class="col-2">
+								<span> <select class="form-select" name="select"
+									th:value="${searchOrderVO.select}">
+										<option value="buyCode"
+											th:selected="${searchOrderVO.select == 'buyCode'}">구매코드</option>
+										<option value="memId"
+											th:selected="${searchOrderVO.select == 'memId'}">구매자ID</option>
+										<option value="memTell"
+											th:selected="${searchOrderVO.select == 'memTell'}">연락처</option>
+								</select>
+								</span>
+							</div>
+							<div class="col-4">
+								<span> <input class="form-control-inline"
+									name="inputInfo" type="text"
+									th:value="${searchOrderVO.inputInfo}">
+								</span>
+							</div>
+							<div class="col-1">
+								<input class="btn" type="button" value="날짜순"
+									onclick="orderBy('BUY_DATE')">
+							</div>
+							<div class="col-1">
+								<input class="btn" type="button" value="상태순"
+									onclick="orderBy('OS.STATUS_CODE')">
+							</div>
+						</div>
+					</form>
+				</div>
+			</div>
+			<div class="row">
+				<!-- 주문 목록(검색) 테이블 -->
+				<div class="col-12">
+					<div class="accordion mb-5" id="accordionExample">
+						<div class="accordion-item">
+							<h2 class="accordion-header" id="headingOne">
+								<button class="accordion-button" type="button"
+									data-bs-toggle="collapse" data-bs-target="#collapseOne-0"
+									aria-expanded="true" aria-controls="collapseOne-0">주문
+									목록</button>
+							</h2>
+							<div id="collapseOne-0" class="accordion-collapse collapse show">
+								<div class="accordion-body">
+									<table class="table text-center">
+										<colgroup>
+											<col width="">
+											<col width="">
+											<col width="">
+											<col width="">
+											<col width="">
+											<col width="">
+											<col width="">
+										</colgroup>
+										<thead class="table_thead">
+											<tr>
+												<td><input type="checkbox" class="form-check-input"
+													id="order_allChk"></td>
+												<td>No</td>
+												<td>구매CODE</td>
+												<td>구매자ID</td>
+												<td>구매자TELL</td>
+												<td>결재PRICE</td>
+												<td>주문STATUS</td>
+												<td>구매일</td>
+											</tr>
+										</thead>
+										<tbody>
+											<th:block th:if="${#lists.size(orderStatusList) == 0}">
+												<tr>
+													<td colspan="7">주문 정보가 없습니다.</td>
+												</tr>
+											</th:block>
+											<th:block th:unless="${#lists.size(orderStatusList) == 0}">
+												<tr th:each="orderStatus : ${orderStatusList}">
+													<td><input type="checkbox"
+														class="form-check-input order_chk"></td>
+													<td>[[${orderStatus.orderNum}]]</td>
+													<td>[[${orderStatus.buyCode}]]</td>
+													<td>[[${orderStatus.memId}]]</td>
+													<td>[[${orderStatus.memberVO.memTell}]]</td>
+													<td>[[${#numbers.formatCurrency(orderStatus.buyVO.buyPrice)}]]</td>
+													<td>[[${orderStatus.statusInfoVO.statusName}]]</td>
+													<td>[[${orderStatus.buyVO.buyDate}]]</td>
+												</tr>
+											</th:block>
+										</tbody>
+									</table>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="row" id="orderStatusAjax">
+				<div class="col">
+					<div class="row">
+						<!-- 신규 주문 내역 테이블 -->
+						<div class="col-12 mb-5 mt-0">
+							<div class="accordion" id="accordionExample">
+								<div class="accordion-item">
+									<h2 class="accordion-header" id="headingOne">
+										<button class="accordion-button collapsed" type="button"
+											data-bs-toggle="collapse" data-bs-target="#collapseOne-1"
+											aria-expanded="true" aria-controls="collapseOne-1">신규
+											주문</button>
+									</h2>
+									<div id="collapseOne-1" class="accordion-collapse collapse">
+										<div class="accordion-body">
+											<table class="table text-center">
+												<colgroup>
+													<col width="">
+													<col width="">
+													<col width="">
+													<col width="">
+													<col width="">
+													<col width="">
+													<col width="">
+													<col width="">
+												</colgroup>
+												<thead class="table_thead">
+													<tr>
+														<td><input type="checkbox" class="form-check-input"
+															id="new_order_allChk"></td>
+														<td>No</td>
+														<td>구매CODE</td>
+														<td>구매자ID</td>
+														<td>구매자TELL</td>
+														<td>결재PRICE</td>
+														<td>주문STATUS</td>
+														<td>구매DATE</td>
+													</tr>
+												</thead>
+												<tbody>
+													<th:block th:if="${#lists.size(newOrderList) == 0}">
+														<tr>
+															<td colspan="7">신규 주문 정보가 없습니다.</td>
+														</tr>
+													</th:block>
+													<th:block th:unless="${#lists.size(newOrderList) == 0}">
+														<tr th:each="orderStatus : ${newOrderList}">
+															<td><input type="checkbox"
+																class="form-check-input new_order_chk"
+																th:value="${orderStatus.orderNum}"></td>
+															<td>[[${orderStatus.orderNum}]]</td>
+															<td>[[${orderStatus.buyCode}]]</td>
+															<td>[[${orderStatus.memId}]]</td>
+															<td>[[${orderStatus.memberVO.memTell}]]</td>
+															<td>[[${#numbers.formatCurrency(orderStatus.buyVO.buyPrice)}]]</td>
+															<td>[[${orderStatus.statusInfoVO.statusName}]]</td>
+															<td>[[${orderStatus.updateDate}]]</td>
+														</tr>
+													</th:block>
+												</tbody>
+											</table>
+											<div class="text-center d-grid">
+												<input class="btn" type="button" value="주문접수 -> 주문확인"
+													onclick="nextLevel(1)">
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<!-- 주문 확인 내역 테이블 -->
+						<div class="col-12 mb-5 mt-0">
+							<div class="accordion" id="accordionExample">
+								<div class="accordion-item">
+									<h2 class="accordion-header" id="headingOne">
+										<button class="accordion-button collapsed" type="button"
+											data-bs-toggle="collapse" data-bs-target="#collapseOne-2"
+											aria-expanded="true" aria-controls="collapseOne-2">주문
+											확인 내역</button>
+									</h2>
+									<div id="collapseOne-2" class="accordion-collapse collapse">
+										<div class="accordion-body">
+											<table class="table text-center">
+												<colgroup>
+													<col width="">
+													<col width="">
+													<col width="">
+													<col width="">
+													<col width="">
+													<col width="">
+													<col width="">
+													<col width="">
+												</colgroup>
+												<thead class="table_thead">
+													<tr>
+														<td><input type="checkbox" class="form-check-input"
+															id="check_order_allChk"></td>
+														<td>No</td>
+														<td>구매CODE</td>
+														<td>구매자ID</td>
+														<td>구매자TELL</td>
+														<td>결재PRICE</td>
+														<td>주문STATUS</td>
+														<td>주문확인DATE</td>
+													</tr>
+												</thead>
+												<tbody>
+													<th:block th:if="${#lists.size(checkOrderList) == 0}">
+														<tr>
+															<td colspan="7">주문확인 내역이 없습니다.</td>
+														</tr>
+													</th:block>
+													<th:block th:unless="${#lists.size(checkOrderList) == 0}">
+														<tr th:each="orderStatus : ${checkOrderList}">
+															<td><input type="checkbox"
+																class="form-check-input check_order_chk"
+																th:value="${orderStatus.orderNum}"></td>
+															<td>[[${orderStatus.orderNum}]]</td>
+															<td>[[${orderStatus.buyCode}]]</td>
+															<td>[[${orderStatus.memId}]]</td>
+															<td>[[${orderStatus.memberVO.memTell}]]</td>
+															<td>[[${#numbers.formatCurrency(orderStatus.buyVO.buyPrice)}]]</td>
+															<td>[[${orderStatus.statusInfoVO.statusName}]]</td>
+															<td>[[${orderStatus.updateDate}]]</td>
+														</tr>
+													</th:block>
+												</tbody>
+											</table>
+											<div class="text-center d-grid">
+												<input class="btn" type="button" value="주문확인 -> 배송준비"
+													onclick="nextLevel(2)">
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<!-- 배송 준비 중인 주문 내역 테이블 -->
+						<div class="col-12 mb-5 mt-0">
+							<div class="accordion" id="accordionExample">
+								<div class="accordion-item">
+									<h2 class="accordion-header" id="headingOne">
+										<button class="accordion-button collapsed" type="button"
+											data-bs-toggle="collapse" data-bs-target="#collapseOne-3"
+											aria-expanded="true" aria-controls="collapseOne-3">배송
+											준비중인 주문 내역</button>
+									</h2>
+									<div id="collapseOne-3" class="accordion-collapse collapse">
+										<div class="accordion-body">
+											<table class="table text-center">
+												<colgroup>
+													<col width="">
+													<col width="">
+													<col width="">
+													<col width="">
+													<col width="">
+													<col width="">
+													<col width="">
+													<col width="">
+												</colgroup>
+												<thead class="table_thead">
+													<tr>
+														<td><input type="checkbox" class="form-check-input"
+															id="pre_delivery_allChk"></td>
+														<td>No</td>
+														<td>구매CODE</td>
+														<td>구매자ID</td>
+														<td>구매자TELL</td>
+														<td>결재PRICE</td>
+														<td>주문STATUS</td>
+														<td>배송준비DATE</td>
+													</tr>
+												</thead>
+												<tbody>
+													<th:block th:if="${#lists.size(preDeliveryList) == 0}">
+														<tr>
+															<td colspan="7">배송 준비중인 주문 내역이 없습니다.</td>
+														</tr>
+													</th:block>
+													<th:block th:unless="${#lists.size(preDeliveryList) == 0}">
+														<tr th:each="orderStatus : ${preDeliveryList}">
+															<td><input type="checkbox"
+																class="form-check-input pre_delivery_chk"
+																th:value="${orderStatus.orderNum}"></td>
+															<td>[[${orderStatus.orderNum}]]</td>
+															<td>[[${orderStatus.buyCode}]]</td>
+															<td>[[${orderStatus.memId}]]</td>
+															<td>[[${orderStatus.memberVO.memTell}]]</td>
+															<td>[[${#numbers.formatCurrency(orderStatus.buyVO.buyPrice)}]]</td>
+															<td>[[${orderStatus.statusInfoVO.statusName}]]</td>
+															<td>[[${orderStatus.updateDate}]]</td>
+														</tr>
+													</th:block>
+												</tbody>
+											</table>
+											<div class="text-center d-grid">
+												<input class="btn" type="button" value="배송준비 -> 배송중"
+													onclick="nextLevel(3)">
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<!-- 배송중인 주문 내역 테이블 -->
+						<div class="col-12 mb-5 mt-0">
+							<div class="accordion" id="accordionExample">
+								<div class="accordion-item">
+									<h2 class="accordion-header" id="headingOne">
+										<button class="accordion-button collapsed" type="button"
+											data-bs-toggle="collapse" data-bs-target="#collapseOne-4"
+											aria-expanded="true" aria-controls="collapseOne-4">배송
+											중인 주문 내역</button>
+									</h2>
+									<div id="collapseOne-4" class="accordion-collapse collapse">
+										<div class="accordion-body">
+											<table class="table text-center">
+												<colgroup>
+													<col width="">
+													<col width="">
+													<col width="">
+													<col width="">
+													<col width="">
+													<col width="">
+													<col width="">
+													<col width="">
+												</colgroup>
+												<thead class="table_thead">
+													<tr>
+														<td><input type="checkbox" class="form-check-input"
+															id="delivering_allChk"></td>
+														<td>No</td>
+														<td>구매CODE</td>
+														<td>구매자ID</td>
+														<td>구매자TELL</td>
+														<td>결재PRICE</td>
+														<td>주문STATUS</td>
+														<td>배송시작DATE</td>
+													</tr>
+												</thead>
+												<tbody>
+													<th:block th:if="${#lists.size(deliveringList) == 0}">
+														<tr>
+															<td colspan="7">배송 중인 주문 내역이 없습니다.</td>
+														</tr>
+													</th:block>
+													<th:block th:unless="${#lists.size(deliveringList) == 0}">
+														<tr th:each="orderStatus : ${deliveringList}">
+															<td><input type="checkbox"
+																class="form-check-input delivering_chk"
+																th:value="${orderStatus.orderNum}"></td>
+															<td>[[${orderStatus.orderNum}]]</td>
+															<td>[[${orderStatus.buyCode}]]</td>
+															<td>[[${orderStatus.memId}]]</td>
+															<td>[[${orderStatus.memberVO.memTell}]]</td>
+															<td>[[${#numbers.formatCurrency(orderStatus.buyVO.buyPrice)}]]</td>
+															<td>[[${orderStatus.statusInfoVO.statusName}]]</td>
+															<td>[[${orderStatus.updateDate}]]</td>
+														</tr>
+													</th:block>
+												</tbody>
+											</table>
+											<div class="text-center d-grid">
+												<input class="btn" type="button" value="배송중 -> 배송완료"
+													onclick="nextLevel(4)">
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<!-- 배송 완료 내역 테이블 -->
+						<div class="col-12 mb-5 mt-0">
+							<div class="accordion" id="accordionExample">
+								<div class="accordion-item">
+									<h2 class="accordion-header" id="headingOne">
+										<button class="accordion-button collapsed" type="button"
+											data-bs-toggle="collapse" data-bs-target="#collapseOne-5"
+											aria-expanded="true" aria-controls="collapseOne-5">배송
+											완료 내역</button>
+									</h2>
+									<div id="collapseOne-5" class="accordion-collapse collapse">
+										<div class="accordion-body">
+											<table class="table text-center">
+												<colgroup>
+													<col width="">
+													<col width="">
+													<col width="">
+													<col width="">
+													<col width="">
+													<col width="">
+													<col width="">
+													<col width="">
+												</colgroup>
+												<thead class="table_thead">
+													<tr>
+														<td><input type="checkbox" class="form-check-input"
+															id="delivery_complete_allChk"></td>
+														<td>No</td>
+														<td>구매CODE</td>
+														<td>구매자ID</td>
+														<td>구매자TELL</td>
+														<td>결재PRICE</td>
+														<td>주문STATUS</td>
+														<td>배송완료DATE</td>
+													</tr>
+												</thead>
+												<tbody>
+													<th:block th:if="${#lists.size(deliveryCompleteList) == 0}">
+														<tr>
+															<td colspan="7">배송 완료 내역이 없습니다.</td>
+														</tr>
+													</th:block>
+													<th:block
+														th:unless="${#lists.size(deliveryCompleteList) == 0}">
+														<tr th:each="orderStatus : ${deliveryCompleteList}">
+															<td><input type="checkbox"
+																class="form-check-input delivery_complete_chk"
+																th:value="${orderStatus.orderNum}"></td>
+															<td>[[${orderStatus.orderNum}]]</td>
+															<td>[[${orderStatus.buyCode}]]</td>
+															<td>[[${orderStatus.memId}]]</td>
+															<td>[[${orderStatus.memberVO.memTell}]]</td>
+															<td>[[${#numbers.formatCurrency(orderStatus.buyVO.buyPrice)}]]</td>
+															<td>[[${orderStatus.statusInfoVO.statusName}]]</td>
+															<td>[[${orderStatus.updateDate}]]</td>
+														</tr>
+													</th:block>
+												</tbody>
+											</table>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</th:block>
+
+<!-- 연결해야 할 외부 js파일 -->
+<th:block layout:fragment="content_js">
+	<script type="text/javascript" src="/js/content/admin/order_manage.js"></script>
+</th:block>
+</html>

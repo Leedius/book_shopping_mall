@@ -1,0 +1,29 @@
+@charset "UTF-8";
+
+.update_btn{
+	font-size: 1rem !important;
+}
+
+.sel_del_btn{
+	border: none;
+	background-color: white;
+	color: red;
+}
+
+.cart_list{
+	border-top: 2px solid silver !important;
+	border-bottom: 2px solid silver !important;
+}
+
+.cart_list_title{
+	background-color: #b7ffe9;
+}
+
+.cart_list_info{
+	border-top: 1px solid silver !important;
+}
+
+.cart_total_info{
+	border-bottom: 2px solid silver !important;
+	background-color: #b7ffe9;
+}

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{fragment/userInfo_layout}">
+
+<!-- 연결해야 할 외부 css파일 -->
+<th:block layout:fragment="content_css">
+	<!-- <link rel="stylesheet" href=""> -->
+</th:block>
+
+<th:block layout:fragment="content">
+	<div class="row">
+		<div class="col-12">
+			<!-- 구매 내역 제목 줄 -->
+			<div class="row mt-4 g-4 mb-3">
+				<div class="col">
+					<h2>회원정보 수정</h2>
+				</div>
+			</div>
+		</div>
+		<div class="col-12">
+			<div class="row">
+				<form th:action="@{/member/updateMemberInfo}" method="post" class="row g-3"
+					id="updateForm">
+					<div class="col-12">
+						<label for="memPw" class="form-label">비밀번호</label> <input
+							type="password" class="form-control" id="memPw" name="memPw"
+							onkeyup="memPwValidate();" onblur="memPwValidate();">
+					</div>
+					<div class="col-12">
+						<label for="check_pw" class="form-label">비밀번호확인</label> <input
+							type="password" class="form-control" id="checkPw"
+							onkeyup="checkPwValidate();" onblur="checkPwValidate();">
+					</div>
+					<div class="col-12">
+						<label for="memName" class="form-label">이름</label> <input
+							type="text" class="form-control" id="memName" name="memName">
+					</div>
+					<div class="col-3">
+						<div class="form-check">
+							<input class="form-check-input" type="radio" id="gender_male"
+								name="gender" value="M" checked> <label
+								class="form-check-label" for="gender_male"> 남성 </label>
+						</div>
+					</div>
+					<div class="col-3">
+						<div class="form-check">
+							<input class="form-check-input" type="radio" id="gender_female"
+								name="gender" value="F"> <label class="form-check-label"
+								for="gender_female"> 여성 </label>
+						</div>
+					</div>
+					<!-- 남는칸에 다른것이 못오게 채우기 -->
+					<div class="col-6"></div>					<div class="col-8">
+						<label for="memAddr" class="form-label">주소</label> <input
+							type="text" class="form-control" id="memAddr" name="memAddr"
+							onclick="postcode();" readonly>
+					</div>
+					<div class="col-4 d-grid">
+						<label for="searchAddr" class="form-label">&nbsp;</label> <input
+							type="button" value="검 색" class="btn" id="searchAddr"
+							onclick="postcode();">
+					</div>
+					<div class="col-12">
+						<input type="text" class="form-control" id="memAddrDetail"
+							name="addrDetail">
+					</div>
+					<div class="col-12 d-grid">
+						<button id="joinBtn" onclick="update();" type="button"
+							class="btn">수 정</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+</th:block>
+
+<!-- 연결해야 할 외부 js파일 -->
+<th:block layout:fragment="content_js">
+	 <script type="text/javascript" src="/js/content/member/update_member_form.js"></script> 
+</th:block>
+</html>

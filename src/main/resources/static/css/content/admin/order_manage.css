@@ -1,0 +1,63 @@
+@charset "UTF-8";
+
+.table_thead {
+	background-color: #b7ffe9;
+}
+
+.search_button {
+	font-size: 1.2rem !important;
+}
+
+.form-select {
+	height: 2.1rem;
+	border-color: #4f4f4f;
+}
+
+.order_info_label{
+	color: red;
+	font-size: 1rem;
+	align-self: flex-end;
+	text-align: left;
+}
+
+.accordion-button:not(.collapsed) {
+	background-color: #b7ffe9;
+	font-size: 1.3rem;
+	color: black;
+}
+
+.accordion-button {
+	background-color: #92ccba;
+	font-size: 1.3rem;
+	color: black;
+}
+
+.accordion-button:not(.collapsed)>.purchase_date {
+	font-size: 1rem;
+}
+
+.table_wrap:last-child{
+	margin-bottom: 5rem;
+}
+
+.tbody-wrapper {
+	max-height: 274px; /* 원하는 높이로 설정 */
+	overflow-y: auto;
+}
+
+.tbody-wrapper::-webkit-scrollbar {
+	width: 15px;
+}
+
+.tbody-wrapper::-webkit-scrollbar-track {
+	background-color: #f2f2f2;
+}
+
+.tbody-wrapper::-webkit-scrollbar-thumb {
+	background-color: #b7ffe9;
+	border-radius: 10px;
+}
+
+.page_btn{
+	text-align: center;
+}

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{fragment/layout}">
+
+<!-- 연결해야 할 외부 css파일 -->
+<th:block layout:fragment="content_css">
+	<!-- <link rel="stylesheet" href=""> -->
+</th:block>
+
+<th:block layout:fragment="content">
+	<th:block layout:fragment="content">
+		<div class="row mt-4 g-4 mb-3">
+			<div class="row">
+				<div class="col sub-title">카테고리 목록</div>
+			</div>
+			<div class="row">
+				<div class="col"
+					style="font-size: 16px; color: red; font-style: italic;">*
+					순번은 카테고리 목록이 화면에 보이는 순서입니다.</div>
+			</div>
+			<div class="row">
+				<div class="col">
+					<table id="cateListTable"
+						class="table table-striped table-hover text-center aling-middle">
+						<colgroup>
+							<col width="10%">
+							<col width="35%">
+							<col width="*">
+							<col width="15%">
+							<col width="15%">
+						</colgroup>
+						<thead class="table_head" style="background-color: #b7ffe9">
+							<tr>
+								<td>No</td>
+								<td>카테고리명</td>
+								<td>사용여부</td>
+								<td>순 번</td>
+								<td>삭 제</td>
+							</tr>
+						</thead>
+						<tbody>
+							<th:block th:if="${#lists.size(cateList) == 0}">
+								<tr>
+									<td colspan="5">등록된 카테고리가 존재하지 않습니다</td>
+								</tr>
+							</th:block>
+							<th:block th:unless="${#lists.size(cateList) == 0}">
+								<tr id="showCate" th:each="category, state : ${cateList}">
+									<td>[[${state.count}]]</td>
+									<td>[[${category.cateName}]]</td>
+									<td>
+										<div class="row">
+											<div class="form-check col-6">
+												<!-- 중요!! 문자열 + 변수 문자열은 ''로 감싼다 -->
+												<input th:name="${'isUse_' + state.count}" type="radio"
+													class="form-check-input isUse"
+													th:checked="${category.isUse == 'Y'}"
+													th:onchange="isUseRadio([[${category.cateCode}]])">사용중
+											</div>
+											<div class="form-check col-6">
+												<input th:name="${'isUse_' + state.count}" type="radio"
+													class="form-check-input isUse"
+													th:checked="${category.isUse == 'N'}"
+													th:onchange="isUseRadio([[${category.cateCode}]])">미사용
+											</div>
+										</div>
+									</td>
+									<td>[[${category.orderNum}]]</td>
+									<!-- 다른방법 th:onclick="|location.href='@{/admin/deleteCategory(cateCode=${category.cateCode})}|" -->
+									<td><span class="deleteCate"
+										th:onclick="deleteCategory([[${category.cateCode}]]);">삭
+											제</span></td>
+								</tr>
+							</th:block>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</th:block>
+</th:block>
+
+<!-- 연결해야 할 외부 js파일 -->
+<th:block layout:fragment="content_js">
+	<!-- <script type="text/javascript" src="js/test.js"></script> -->
+</th:block>
+</html>

@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- 해당 파일에 모든 쿼리문을 작성 -->
+<!-- collection의 객체를 여러개 가진 list형식에 쓰는데 property에는 데이터 여러개가 들어있는 변수이고 resultMap은 
+	어디에 연결시킬건지 지정하는 것 -->
+<mapper namespace="cartMapper">
+	<resultMap type="com.study.shop.cart.vo.CartVO" id="cart">
+		<id column="CART_CODE" 			property="cartCode" />
+		<result column="ITEM_CODE" 		property="itemCode" />
+		<result column="MEM_ID" 		property="memId" />
+		<result column="REG_DATE" 		property="regDate" />
+		<result column="CART_CNT" 		property="cartCnt" />
+		<result column="TOTAL_PRICE" 	property="totalPrice" />
+		<association property="itemVO" resultMap="itemMapper.item"></association>
+	</resultMap>
+	<resultMap type="com.study.shop.view.CartViewVO" 		id="cartView">
+		<id column="CART_CODE" 					property="cartCode" />
+		<result column="ITEM_CODE" 				property="itemCode" />
+		<result column="CATE_CODE" 				property="cateCode" />
+		<result column="ITEM_NAME" 				property="itemName" />
+		<result column="ITEM_PRICE" 			property="itemPrice" />
+		<result column="ITEM_STOCK" 			property="itemStock" />
+		<result column="ITEM_INTRO" 			property="itemIntro" />
+		<result column="ITEM_STATUS" 			property="itemStatus" />
+		<result column="MEM_ID" 				property="memId" />
+		<result column="REG_DATE" 				property="regDate" />
+		<result column="CART_CNT" 				property="cartCnt" />
+		<result column="IMG_CODE" 				property="imgCode" />
+		<result column="ORIGIN_FILE_NAME" 		property="originFileName" />
+		<result column="ATTACHED_FILE_NAME" 	property="attachedFileName" />
+		<result column="IS_MAIN" 				property="isMain" />
+	</resultMap>
+
+	<!-- 장바구니 조회 -->
+	<select id="getCartList" resultMap="cart">
+		SELECT CART_CODE
+			, CART.ITEM_CODE
+			, ITEM_NAME
+			, ITEM_PRICE
+			, ITEM_STOCK
+			, CART_CNT
+			, ATTACHED_FILE_NAME
+			, ITEM_PRICE * CART_CNT AS TOTAL_PRICE
+		FROM SHOP_CART CART, SHOP_ITEM ITEM, ITEM_IMG IMG
+		WHERE CART.ITEM_CODE = ITEM.ITEM_CODE
+		AND ITEM.ITEM_CODE = IMG.ITEM_CODE
+		AND IS_MAIN = 'Y'
+		AND MEM_ID = #{memId}
+		ORDER BY CART_CODE DESC
+	</select>
+
+	<!-- 카트 목록 조회 -->
+	<!-- 카트뷰를 이용한 방법
+	 <select id="getCartList" resultMap="cartView">
+		SELECT CART_CODE
+			, ITEM_CODE
+			, CATE_CODE
+			, ITEM_NAME
+			, ITEM_PRICE
+			, ITEM_STOCK
+			, MEM_ID
+			, REG_DATE
+			, CART_CNT
+			, ATTACHED_FILE_NAME
+		FROM ITEM_LIST
+		WHERE
+			MEM_ID = #{memId}
+		AND IS_MAIN = 'Y' 			
+	</select> -->
+
+	<!-- 카트 등록 -->
+	<insert id="regCart">
+		MERGE INTO SHOP_CART
+		USING DUAL
+		ON (ITEM_CODE = #{itemCode}
+			AND MEM_ID = #{memId})
+		WHEN MATCHED THEN
+		UPDATE
+		SET
+			CART_CNT = CART_CNT + #{cartCnt}
+		WHERE ITEM_CODE = #{itemCode}
+		AND MEM_ID = #{memId}
+		WHEN NOT MATCHED THEN
+		INSERT (
+			CART_CODE
+			, ITEM_CODE
+			, MEM_ID
+			, CART_CNT
+		) VALUES (
+			(SELECT
+			'CART_'||LPAD(NVL(MAX(TO_NUMBER(SUBSTR(CART_CODE, 6))), 0) + 1, 3,
+			'0') FROM SHOP_CART)
+			, #{itemCode}
+			, #{memId}
+			, #{cartCnt}
+		)
+	</insert>
+	
+	 <!-- 카트 상품 수량 수정 -->
+	 <update id="updateCart">
+	 	UPDATE SHOP_CART
+	 	SET
+	 		CART_CNT = #{cartCnt}
+	 	WHERE
+	 		CART_CODE = #{cartCode}
+	 </update>
+	 
+	 <!-- 카트 상품 삭제 -->
+	 <delete id="delCartItem">
+	 	DELETE SHOP_CART
+	 	WHERE CART_CODE = #{cartCode}
+	 </delete>
+	 
+	 <!-- 카트 선택 상품 삭제 -->
+	 <delete id="deleteCarts">
+	 	DELETE SHOP_CART
+	 	WHERE CART_CODE IN
+	 	<foreach collection="cartCodeList" item="cartCode" open="(" close=")" separator=",">
+	 		#{cartCode}
+	 	</foreach>
+	 </delete>
+	 
+	 
+</mapper>
+
+	

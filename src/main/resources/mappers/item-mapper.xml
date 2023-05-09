@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- 해당 파일에 모든 쿼리문을 작성 -->
+<!-- collection의 객체를 여러개 가진 list형식에 쓰는데 
+	property에는 데이터 여러개가 들어있는 변수이고   
+	resultMap은 어디에 연결시킬건지 지정하는 것 -->
+<mapper namespace="itemMapper">
+	<resultMap type="com.study.shop.item.vo.CategoryVO"
+		id="category">
+		<id column="CATE_CODE" 			property="cateCode" />
+		<result column="CATE_NAME" 		property="cateName" />
+		<result column="ORDER_NUM" 		property="orderNum" />
+		<result column="IS_USE" 		property="isUse" />
+	</resultMap>
+	<resultMap type="com.study.shop.item.vo.ItemVO" id="item">
+		<id column="ITEM_CODE" 				property="itemCode" />
+		<result column="CATE_CODE" 			property="cateCode" />
+		<result column="ITEM_NAME" 			property="itemName" />
+		<result column="ITEM_PRICE" 		property="itemPrice" />
+		<result column="ITEM_STOCK" 		property="itemStock" />
+		<result column="ITEM_INTRO" 		property="itemIntro" />
+		<result column="ITEM_STATUS" 		property="itemStatus" />
+		<result column="ITEM_STATUS_NAME" 	property="itemStatusName" />
+		<association property="categoryVO" 	resultMap="category"></association>
+		<collection property="imgList" 		resultMap="img"></collection>
+	</resultMap>
+	<resultMap type="com.study.shop.item.vo.ImgVO" id="img">
+		<id column="IMG_CODE" 					property="imgCode" />
+		<result column="ORIGIN_FILE_NAME" 		property="originFileName" />
+		<result column="ATTACHED_FILE_NAME" 	property="attachedFileName" />
+		<result column="IS_MAIN" 				property="isMain" />
+		<result column="ITEM_CODE" 				property="itemCode" />
+	</resultMap>
+
+	<!-- 사용 중인 카테고리 목록 -->
+	<select id="getCateListInUse" resultMap="category">
+		SELECT CATE_CODE
+		, CATE_NAME
+		, ORDER_NUM
+		FROM ITEM_CATEGORY
+		WHERE IS_USE = 'Y'
+		ORDER BY ORDER_NUM
+	</select>
+	
+	<!-- 상품 목록 조회(검색 기능 포함) -->
+	<select id="getItemList" resultMap="itemMapper.item">
+		SELECT ITEM.ITEM_CODE
+			, ITEM.ITEM_NAME
+			, DECODE(ITEM_STATUS, 1, '판매중', 2, '준비중', 3, '매진') AS ITEM_STATUS_NAME
+			, ITEM_PRICE
+			, ITEM_STOCK
+			, CATE_NAME
+			, ORIGIN_FILE_NAME
+			, ATTACHED_FILE_NAME
+			, IS_MAIN
+		FROM SHOP_ITEM ITEM, ITEM_CATEGORY CATE, ITEM_IMG IMG
+		WHERE ITEM.CATE_CODE = CATE.CATE_CODE
+		AND ITEM.ITEM_CODE = IMG.ITEM_CODE
+		AND IMG.IS_MAIN = 'Y'
+		<!-- 검색 조건 -->
+		<!-- searchVO.searchItemName != null 이조건을 넣을시 -->
+		<!-- 상품관리 페이지 관리 갈 때 searchVO자체가 NULL이기 때문에 오류가난다. -->
+		<if test="searchVO != null">
+			<if test='!searchVO.searchItemName.equals("")'>
+				AND UPPER(ITEM_NAME) LIKE '%'||UPPER(#{searchVO.searchItemName})||'%'
+			</if>
+	 		<if test="searchVO.searchCateCode != null and searchVO.searchCateCode.length != 0">
+				AND ITEM.CATE_CODE IN <foreach collection="searchVO.searchCateCode" item="cateCode" open="(" separator="," close=")">'${cateCode}'</foreach>
+			</if>
+			<if test='searchVO.searchItemStatus != 0'>
+				AND ITEM_STATUS = #{searchVO.searchItemStatus}
+			</if>
+			<!-- BETWEEN 둘다 포함 -->
+			<if test='!searchVO.searchMinItemStock.isEmpty() and searchVO.searchMinItemStock != 0'>
+				AND ITEM_STOCK &gt;= TO_NUMBER(#{searchVO.searchMinItemStock})
+			</if>
+			<if test='!searchVO.searchMaxItemStock.isEmpty() and searchVO.searchMaxItemStock != 0'>
+				AND ITEM_STOCK &lt;= TO_NUMBER(#{searchVO.searchMaxItemStock})
+			</if>
+		</if>
+		<if test="cateCode != null">
+			AND ITEM.CATE_CODE = #{cateCode}
+		</if>
+	</select>
+	
+	<!-- 상품 상세 페이지 -->
+	<select id="getItemDetailPage" resultMap="item">
+		SELECT ITEM.ITEM_CODE
+			, ITEM_NAME
+			, ITEM_STOCK
+			, ITEM_PRICE
+			, ITEM_INTRO
+			, ITEM_STATUS
+			, CATE.CATE_NAME
+			, ORIGIN_FILE_NAME
+			, ATTACHED_FILE_NAME
+			, IS_MAIN
+		FROM SHOP_ITEM ITEM, ITEM_IMG IMG, ITEM_CATEGORY CATE
+		WHERE ITEM.CATE_CODE = CATE.CATE_CODE
+		AND ITEM.ITEM_CODE = IMG.ITEM_CODE
+		AND ITEM.ITEM_CODE = #{itemCode}
+	</select>
+	
+
+</mapper>
+
+	

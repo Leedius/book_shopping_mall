@@ -1,0 +1,43 @@
+@charset "UTF-8";
+
+
+.search_bar{
+	vertical-align: middle;
+}
+
+.search_bar .btn{
+	font-size: 1rem !important;
+}
+
+.one_item_list:last-child{
+	border-bottom: none !important;
+}
+
+.history_item_text{
+	font-size: 1.5rem !important;
+}
+
+.accordion-header .col{
+	font-size: 1.3rem;
+	color: black;
+}
+
+.accordion-header .purchase_date{
+	font-size: 1rem;
+}
+
+.accordion-button:not(.collapsed){
+	background-color: #b7ffe9;
+	font-size: 1.3rem;
+	color: black;
+}
+
+.accordion-button{
+	background-color: #92ccba;
+	font-size: 1.3rem;
+	color: black;
+}
+
+.accordion-button:not(.collapsed) > .purchase_date{
+	font-size: 1rem;
+}

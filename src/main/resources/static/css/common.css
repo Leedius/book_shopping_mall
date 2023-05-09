@@ -1,0 +1,106 @@
+@charset "UTF-8";
+
+@font-face {
+	font-family: 'GangwonEdu_OTFBoldA';
+	src:
+		url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2201-2@1.0/GangwonEdu_OTFBoldA.woff')
+		format('woff');
+	font-weight: normal;
+	font-style: normal;
+}
+
+.list-group-item.active {
+	background-color: #b7ffe9 !important;
+	border-color: #b7ffe9 !important;
+	color: black !important;
+}
+
+.container {
+	height: 100rem;
+	/* background-image:url("/images/layout/bookshop.jfif"); */
+	/* background-color: #cfffea; */
+	background-size: cover;
+	margin-top: 2rem;
+	font-family: 'GangwonEdu_OTFBoldA';
+	font-size: 1.2rem;
+	background-size: cover;
+}
+
+table .table_head {
+	background-color: #0d6efd;
+	text-align: center;
+}
+
+.table {
+	-bs-table-border-color: silver !important;
+	border-top: 1px solid silver;
+	border-top-color: silver !important;
+}
+
+.my-invalid {
+	margin-top: 0px !important;
+	font-size: 0.9rem;
+	color: red;
+}
+
+input[type=radio]:checked, input[type=checkbox]:checked {
+	color: black;
+	background-color: #b7ffe9;
+	border-color: #dee2e6;
+}
+
+input[type=radio], input[type=checkbox] {
+	border-color: #dee2e6;
+	vertical-align: middle;
+}
+
+a {
+	cursor: pointer;
+	text-decoration: none !important;
+	color: black !important;
+}
+
+a:hover {
+	text-decoration: underline !important;
+}
+
+textarea {
+	resize: none !important;
+}
+
+.btn {
+	background-color: #b7ffe9 !important;
+	border-color: #dee2e6 !important;
+	font-size: 1.2rem !important;
+}
+
+.btn-orderBy {
+	background-color: white !important;
+	border-color: #dee2e6 !important;
+	font-size: 1.2rem !important;
+}
+
+.btn:hover {
+	text-decoration: underline;
+	background-color: #92ccba !important;
+}
+
+.form-label {
+	margin-bottom: 0rem !important;
+}
+
+.form-select {
+	height: 2.4rem !important;
+	border-color: #dee2e6 !important;
+	background-color: #b7ffe9 !important;
+}
+
+.input-group-text {
+	background-color: #b7ffe9 !important;
+}
+
+.custom-pagination .active{
+	background-color: #b7ffe9 !important;
+	border-color: #b7ffe9 !important;
+}
+

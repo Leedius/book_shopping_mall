@@ -1,0 +1,23 @@
+@charset "UTF-8";
+
+.btn-danger{
+	 height: 70%;
+}
+
+.isUse{
+	font-size: 0.8rem;
+	padding: 0;
+}
+
+.deleteCate{
+	color: red;
+	cursor: pointer;
+}
+
+.deleteCate:hover{
+	text-decoration: underline;
+}
+
+.reg_cate{
+	height: 48px;
+}

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{fragment/user_layout}">
+
+<!-- 연결해야 할 외부 css파일 -->
+<th:block layout:fragment="content_css">
+	<!-- <link rel="stylesheet" href=""> -->
+</th:block>
+
+<th:block layout:fragment="content">
+	<div class="row row-cols-5 g-4 mt-3 mb-3">
+		<th:block th:if="${itemList.size() == 0}">
+			<h2 style="text-align: center;">등록된 상품이 없습니다</h2>
+		</th:block>
+		<th:block th:unless="${itemList.size() == 0}">
+			<th:block th:each="item : ${itemList}">
+				<div class="col">
+					<div class="card h-100">
+							<a href="javascript:void(0);" th:onclick="itemDetailPage([[${item.itemCode}]]);"><img th:src="${'/upload/images/item/' + item.imgList[0].attachedFileName}" class="card-img-top" height="300px"></a>
+						<div class="card-body text-center">
+							<h5 class="card-title">[[${item.itemName}]]</h5>
+							<p class="card-text">
+								[[${#numbers.formatCurrency(item.itemPrice)}]]
+							</p>
+						</div>
+					</div>
+				</div>
+			</th:block>
+		</th:block>
+	</div>
+</th:block>
+
+<!-- 연결해야 할 외부 js파일 -->
+<th:block layout:fragment="content_js">
+	<script type="text/javascript" src="/js/content/item/item_list.js"></script>
+</th:block>
+</html>
