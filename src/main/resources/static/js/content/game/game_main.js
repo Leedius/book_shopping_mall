@@ -219,6 +219,30 @@ function render(){
 	}
 }
 
+// 다시 시작 버튼을 그리는 함수
+function drawRestartButton() {
+	ctx.fillStyle = "white";
+	ctx.font = "24px Arial";
+	ctx.fillText("Press Space to Restart", 175, 400);
+	ctx.fillText(`SCORE : ${score}`, 175, 430);
+}
+
+// 다시 시작 버튼을 눌렀을 때 게임을 재시작
+document.addEventListener('keydown', function(event) {
+	if (event.keyCode === 32) {
+		if (gameOver) {
+			gameOver = false;
+			score = 0;
+			enemyList = [];
+			bulletList = [];
+			createEnemy();
+			createBullet();
+			main();
+		}
+		event.preventDefault();
+	}
+});
+
 //게임 이미지 계속 로드하기
 function main(){
 	if (!gameOver) {
@@ -228,6 +252,7 @@ function main(){
 	}
 	else{
 		ctx.drawImage(gameoverImage, 55, 100, 500, 500);
+		drawRestartButton();
 	}
 }
 
