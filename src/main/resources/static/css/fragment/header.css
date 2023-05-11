@@ -19,3 +19,15 @@ onclick {
 onclick:hover {
 	text-decoration: underline;
 }
+
+.game_wrap{
+	text-align: right;
+}
+
+.game{
+	align-self: center;
+}
+
+.game > a{
+	color: #0057a7 !important;
+}

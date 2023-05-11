@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+   xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+   layout:decorate="~{fragment/user_layout}">
+  
+<!-- 연결해야 할 외부 css파일 -->  
+<th:block layout:fragment="content_css">
+  	 <link rel="stylesheet" href="/css/content/game/game_main.css">
+</th:block>
+
+<th:block layout:fragment="content">
+	<div class="container" id="game_canvas">
+		<h1>Game!!</h1>
+		<canvas></canvas>
+	</div>
+</th:block>
+
+<!-- 연결해야 할 외부 js파일 -->
+<th:block layout:fragment="content_js">
+  	 <script type="text/javascript" src="/js/content/game/game_main.js"></script>
+</th:block>
+</html>

@@ -1,0 +1,12 @@
+@charset "UTF-8";
+
+#game_canvas{
+	margin: 0 auto;
+	text-align: center;
+}
+
+#game_canvas canvas{
+	background-image: url("/image/game_images/game_background.gif");
+	background-repeat: no-repeat;
+	background-size: 100% 100%;
+}

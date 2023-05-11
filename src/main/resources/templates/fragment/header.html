@@ -54,6 +54,7 @@
 											th:onclick="getSelectCateItemList([[${cateList.cateCode}]])">
 												[[${cateList.cateName}]] </a></li>
 									</th:block>
+									
 								</th:block>
 								<th:block sec:authorize="hasRole('ROLE_ADMIN')">
 									<th:block th:each="menu : ${adminMenuList}">
@@ -66,6 +67,9 @@
 								</th:block>
 							</th:block>
 						</ul>
+					</div>
+					<div class="game_wrap">
+						<span class="game"><a th:href="@{/game/gameMain}">미니게임 하러가기</a></span>
 					</div>
 				</div>
 			</nav>
